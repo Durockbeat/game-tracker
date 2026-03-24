@@ -884,83 +884,158 @@ const ACHIEVEMENTS_DEF=[
 ];
  
 // ══════════════════════════════════════════
-// STORAGE LAYER — works in artifact + offline
+// STORAGE LAYER
+// ── New key: "gameTrackerData" (multi-user ready)
+// ── Legacy key: "gt_v4" / "games" (auto-migrated)
 // ══════════════════════════════════════════
-const KEY='gt_v4';
  
-// Check if window.storage (artifact API) is available
+const STORAGE_KEY = 'gameTrackerData'; // ← new canonical key (never changes)
+const LEGACY_KEYS = ['gt_v4', 'games']; // ← old keys to migrate from
+ 
+// ── Future auth hook: replace 'local-user' with real UID at login ──
+// To integrate Supabase/Firebase, set this before initApp():
+//   currentUserId = auth.user.id;
+let currentUserId = 'local-user';
+ 
+// ── Probe storage availability ──
 function hasArtifactStorage(){
   return typeof window.storage!=='undefined'&&window.storage!==null&&typeof window.storage.set==='function';
 }
-// Check if localStorage is available
 function hasLocalStorage(){
-  try{localStorage.setItem('__gt_test__','1');localStorage.removeItem('__gt_test__');return true;}
+  try{localStorage.setItem('__gt_probe__','1');localStorage.removeItem('__gt_probe__');return true;}
   catch(e){return false;}
 }
  
-// In-memory fallback for sandboxed environments with no storage
+// ── In-memory fallback (sandboxed / no-storage environments) ──
 let _memStore={};
  
-function saveData(data){
-  const json=JSON.stringify(data);
-  if(hasArtifactStorage()){
-    try{
-      window.storage.set(KEY,json).catch(e=>console.warn('artifact storage set failed:',e));
-    }catch(e){console.warn('artifact storage error:',e);}
-  }
-  if(hasLocalStorage()){
-    try{localStorage.setItem(KEY,json);}
-    catch(e){console.error('localStorage save failed:',e);}
-  }
-  _memStore[KEY]=json; // always keep in memory as last-resort
+// ── Canonical data envelope ──
+// Shape: { user_id: string, games: GameEntry[], version: number, updatedAt: string }
+function makeEnvelope(gamesArray){
+  return {
+    user_id:   currentUserId,
+    games:     gamesArray,
+    version:   3,
+    updatedAt: new Date().toISOString(),
+  };
 }
  
-function loadData(){
-  // 1. Try localStorage first (sync, reliable)
+// ── Save: write envelope to all available storages ──
+function saveData(gamesArray){
+  const envelope = makeEnvelope(gamesArray);
+  const json = JSON.stringify(envelope);
+ 
+  if(hasArtifactStorage()){
+    try{
+      window.storage.set(STORAGE_KEY, json)
+        .catch(e=>console.warn('[GT] artifact storage write failed:', e));
+    }catch(e){console.warn('[GT] artifact storage error:', e);}
+  }
+ 
   if(hasLocalStorage()){
     try{
-      const raw=localStorage.getItem(KEY);
-      if(raw!==null&&raw!==''){
-        const parsed=JSON.parse(raw);
-        if(Array.isArray(parsed))return parsed;
-      }
-    }catch(e){console.warn('localStorage load error:',e);}
+      localStorage.setItem(STORAGE_KEY, json);
+    }catch(e){console.error('[GT] localStorage write failed:', e);}
   }
-  // 2. Try in-memory fallback
-  if(_memStore[KEY]){
+ 
+  _memStore[STORAGE_KEY] = json; // always keep in memory
+}
+ 
+// ── Read raw JSON string from any available storage ──
+function _readRaw(){
+  // 1. localStorage (sync, most reliable)
+  if(hasLocalStorage()){
     try{
-      const parsed=JSON.parse(_memStore[KEY]);
-      if(Array.isArray(parsed))return parsed;
+      const v = localStorage.getItem(STORAGE_KEY);
+      if(v) return {src:'localStorage', raw:v};
     }catch(e){}
   }
-  return [];
+  // 2. In-memory fallback
+  if(_memStore[STORAGE_KEY]) return {src:'memory', raw:_memStore[STORAGE_KEY]};
+  return null;
+}
+ 
+// ── Extract games array from whatever shape the stored JSON has ──
+function _extractGames(parsed){
+  // New envelope: { user_id, games: [...] }
+  if(parsed&&!Array.isArray(parsed)&&Array.isArray(parsed.games)) return parsed.games;
+  // Bare array (old gt_v4 format)
+  if(Array.isArray(parsed)) return parsed;
+  return null;
+}
+ 
+// ── Load data with automatic migration from legacy keys ──
+function loadData(){
+  // ── Try new key first ──
+  const found = _readRaw();
+  if(found){
+    try{
+      const parsed = JSON.parse(found.raw);
+      const arr = _extractGames(parsed);
+      if(arr) return arr;
+    }catch(e){console.warn('[GT] parse error on main key:', e);}
+  }
+ 
+  // ── Migration: try legacy keys ──
+  if(hasLocalStorage()){
+    for(const legacyKey of LEGACY_KEYS){
+      try{
+        const raw = localStorage.getItem(legacyKey);
+        if(!raw) continue;
+        const parsed = JSON.parse(raw);
+        const arr = _extractGames(parsed);
+        if(arr && arr.length){
+          console.info(`[GT] Migrating ${arr.length} games from legacy key "${legacyKey}" → "${STORAGE_KEY}"`);
+          // Save under new key immediately
+          saveData(arr);
+          // Keep legacy key for one session, then clean up silently
+          setTimeout(()=>{
+            try{localStorage.removeItem(legacyKey);}catch(e){}
+          }, 5000);
+          return arr;
+        }
+      }catch(e){console.warn(`[GT] migration error for key "${legacyKey}":`, e);}
+    }
+  }
+ 
+  return []; // fresh start
+}
+ 
+// ── Normalize individual game entries (handles all historical formats) ──
+function normalizeGame(g){
+  if(!g||typeof g!=='object') return null;
+  if(!g.platformMain&&g.platform)  g.platformMain = g.platform;
+  if(!Array.isArray(g.platforms)||!g.platforms.length)
+    g.platforms = g.platformMain ? [g.platformMain] : [];
+  g.platforms = g.platforms.filter(p=>typeof p==='string'&&p.length>0);
+  if(g.status==='Lista de Desejos') g.status='Desejos';
+  if(typeof g.score==='undefined')  g.score='';
+  // ── RAWG / future auth fields (prepared, not used yet) ──
+  if(!g.rawgId)      g.rawgId      = g.rawgId      || '';
+  if(!g.rawgRelease) g.rawgRelease = g.rawgRelease || '';
+  if(!g.rawgGenres)  g.rawgGenres  = g.rawgGenres  || '';
+  if(!g.user_id)     g.user_id     = currentUserId;
+  return g;
 }
  
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let games=loadData();
+let games = loadData().map(normalizeGame).filter(Boolean);
+saveData(games); // persist normalized + migrated data immediately
  
-// Migrate old data
-games=games.map(g=>{
-  if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
-  if(!Array.isArray(g.platforms)||!g.platforms.length){
-    g.platforms=g.platformMain?[g.platformMain]:[];
-  }
-  // Normalise: ensure all platform ids in g.platforms are strings
-  g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
-  if(g.status==='Lista de Desejos'){g.status='Desejos';}
-  return g;
-});
-saveData(games);
+let editId       = null;
+let curPlat      = null;
+let curPlatFilter= 'Todos';
+let curLibFilter = {status:'Todos'};
+let sbCollapsed  = false;
  
-let editId=null;
-let curPlat=null;
-let curPlatFilter='Todos';
-let curLibFilter={status:'Todos'};
-let sbCollapsed=false;
+// ── persist() is the single write-point for all game mutations ──
+function persist(){ saveData(games); }
  
-function persist(){saveData(games);}
+// ── Future auth integration point ──
+// Call this after successful login to switch storage context:
+// function switchUser(newUserId){ currentUserId = newUserId; games = loadData()...; initApp(); }
  
 // ══════════════════════════════════════════
 // XP & GAMIFICATION
@@ -1541,6 +1616,7 @@ function saveGame(){
   const platformMain=document.getElementById('f-plat-main').value||platforms[0]||'Outro';
   const g={
     id:editId||Date.now(),
+    user_id:currentUserId,            // multi-user: stamped on every entry
     name,
     cover:document.getElementById('f-cover').value.trim(),
     platforms,platformMain,
@@ -1554,7 +1630,7 @@ function saveGame(){
     hours:document.getElementById('f-hours').value.trim(),
     avgtime:document.getElementById('f-avgtime').value.trim(),
     obs:document.getElementById('f-obs').value.trim(),
-    // RAWG future fields
+    // RAWG / future API fields
     rawgId:document.getElementById('f-rawg-id').value,
     rawgRelease:document.getElementById('f-rawg-release').value,
     rawgGenres:document.getElementById('f-rawg-genres').value,
@@ -1632,11 +1708,13 @@ function deleteGame(id){
 function exportBackup(){
   if(!games.length){toast('⚠️ Nenhum jogo para exportar.');return;}
  
+  // Full multi-user-ready envelope
   const payload={
-    version:2,
-    exportedAt:new Date().toISOString(),
-    totalGames:games.length,
-    games:games,
+    version:    3,
+    exportedAt: new Date().toISOString(),
+    user_id:    currentUserId,
+    totalGames: games.length,
+    games:      games,
   };
  
   const json=JSON.stringify(payload,null,2);
@@ -1674,7 +1752,7 @@ function importBackup(input){
       return;
     }
  
-    // Accept both raw array and wrapped {games:[...]} formats
+    // Accept: bare array | {games:[...]} | full envelope {user_id, games:[...]}
     let incoming=null;
     if(Array.isArray(parsed)){
       incoming=parsed;
@@ -1721,16 +1799,7 @@ function importBackup(input){
 function confirmImport(){
   if(!_pendingImport){cancelImport();return;}
  
-  games=_pendingImport.map(g=>{
-    if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
-    if(!Array.isArray(g.platforms)||!g.platforms.length){
-      g.platforms=g.platformMain?[g.platformMain]:[];
-    }
-    g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
-    if(g.status==='Lista de Desejos'){g.status='Desejos';}
-    if(typeof g.score==='undefined')g.score='';
-    return g;
-  });
+  games=_pendingImport.map(normalizeGame).filter(Boolean);
  
   saveData(games);
   _pendingImport=null;
@@ -1766,28 +1835,24 @@ function initApp(){
   renderDash();
 }
  
-// Try to load from artifact window.storage asynchronously
-// (artifact API is async; localStorage is already loaded synchronously above)
+// ── Async artifact storage bootstrap ──
+// localStorage is already loaded synchronously above; this handles
+// the artifact window.storage API which is async-only.
 if(hasArtifactStorage()){
-  window.storage.get(KEY).then(result=>{
+  window.storage.get(STORAGE_KEY).then(result=>{
     if(result&&result.value){
       try{
-        const remote=JSON.parse(result.value);
-        if(Array.isArray(remote)&&remote.length>games.length){
-          // Remote has more data — use it and sync back to localStorage
-          games=remote.map(g=>{
-            if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
-            if(!Array.isArray(g.platforms)||!g.platforms.length){g.platforms=g.platformMain?[g.platformMain]:[];}
-            g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
-            if(g.status==='Lista de Desejos'){g.status='Desejos';}
-            return g;
-          });
+        const parsed = JSON.parse(result.value);
+        const arr = _extractGames(parsed);
+        if(Array.isArray(arr)&&arr.length>games.length){
+          // Artifact storage has more data — use it and sync to localStorage
+          games = arr.map(normalizeGame).filter(Boolean);
           saveData(games);
-          initApp(); // re-render with freshly loaded data
+          initApp(); // re-render with fresh data
         }
-      }catch(e){console.warn('artifact storage parse error:',e);}
+      }catch(e){console.warn('[GT] artifact async load error:', e);}
     }
-  }).catch(e=>console.warn('artifact storage get failed:',e));
+  }).catch(e=>console.warn('[GT] artifact storage get failed:', e));
 }
  
 initApp();
