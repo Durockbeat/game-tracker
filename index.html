@@ -66,7 +66,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
  
 /* ═══ TOPBAR ═══ */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,12,.94);backdrop-filter:blur(16px);z-index:50;gap:10px;flex-wrap:wrap}
-.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.5px}
+.topbar-title{font-family:'Syne',sans-serif;font-size:clamp(14px,2.5vw,18px);font-weight:800;letter-spacing:-.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
  
 /* ═══ BUTTONS ═══ */
@@ -84,20 +84,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qstat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;border-right:1px solid var(--border);cursor:default;transition:background var(--tr)}
 .qstat:last-child{border-right:none}
 .qstat:hover{background:var(--surface2)}
-.qsv{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-1px;line-height:1}
-.qsl{font-size:8px;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-top:2px;white-space:nowrap}
+.qsv{font-family:'Syne',sans-serif;font-size:clamp(14px,2.2vw,20px);font-weight:800;letter-spacing:-1px;line-height:1}
+.qsl{font-size:clamp(7px,1vw,9px);letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-top:2px;white-space:nowrap}
  
 /* ═══ SECTION ROWS (Netflix style) ═══ */
 .section-wrap{padding:0 24px 32px}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:28px}
-.section-ttl{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.section-ttl{font-family:'Syne',sans-serif;font-size:clamp(13px,2vw,16px);font-weight:800;letter-spacing:-.3px}
 .section-ttl span{color:var(--text3);font-size:12px;font-weight:400;margin-left:8px}
 .see-all{font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.3px;transition:opacity var(--tr)}
 .see-all:hover{opacity:.7}
  
 /* ═══ NETFLIX GRID ═══ */
-.nf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
-.nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.nf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(130px,20vw,180px),1fr));gap:12px}
+.nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(clamp(150px,22vw,200px),1fr))}
  
 /* ═══ GAME CARD ═══ */
 .gc{position:relative;border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .22s ease,box-shadow .22s ease;background:var(--surface);border:1px solid var(--border);group:1}
@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .gc-cover-placeholder .ph-txt{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:0 8px;letter-spacing:.5px;text-transform:uppercase}
 .gc-gradient{position:absolute;bottom:0;left:0;right:0;height:70%;background:linear-gradient(to top,rgba(10,10,12,.98) 0%,rgba(10,10,12,.6) 60%,transparent 100%);pointer-events:none}
 .gc-body{position:absolute;bottom:0;left:0;right:0;padding:10px 10px 10px}
-.gc-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;letter-spacing:-.2px;line-height:1.2;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gc-name{font-family:'Syne',sans-serif;font-size:clamp(10px,1.5vw,12px);font-weight:800;letter-spacing:-.2px;line-height:1.2;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .gc-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .gc-plat-ico{font-size:10px;line-height:1}
 .gc-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:100px;white-space:nowrap}
@@ -186,12 +186,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .rec-empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
  
 /* ═══ FILTERS BAR ═══ */
-.filters-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--sidebar)}
+.filters-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--sidebar);min-height:0}
 .fbtn{font-size:11px;font-weight:500;padding:5px 13px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--tr);font-family:'DM Sans',sans-serif}
 .fbtn:hover{border-color:var(--text2);color:var(--text)}
 .fbtn.active{background:rgba(200,241,53,.09);border-color:var(--accent);color:var(--accent)}
 .filter-sep{width:1px;height:16px;background:var(--border2);flex-shrink:0}
-.search-input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border-radius:100px;outline:none;width:180px;transition:border-color var(--tr)}
+.search-input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border-radius:100px;outline:none;width:clamp(120px,25vw,200px);transition:border-color var(--tr);flex-shrink:1}
 .search-input:focus{border-color:var(--accent)}
 .search-input::placeholder{color:var(--text3)}
  
@@ -267,22 +267,116 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mob-logo span{color:var(--accent)}
 #sboverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
  
+/* ─── TABLET (≤ 1024px) ─── */
+@media(max-width:1024px){
+  :root{--sw:210px}
+  .nf-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}
+  .nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .charts-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .qstats-7{grid-template-columns:repeat(4,1fr)}
+  .section-wrap{padding:0 18px 28px}
+  .dash-wrap{padding:0 18px 28px}
+  .topbar{padding:14px 18px}
+  .topbar-right{gap:6px}
+  .btn-sm{padding:5px 10px;font-size:11px}
+  .filters-bar{padding:10px 18px;gap:5px}
+  .plat-wrap{padding:18px}
+  .achievements-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+}
+ 
+/* ─── MOBILE (≤ 760px) ─── */
 @media(max-width:760px){
-  #sidebar{position:fixed;left:0;top:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;height:100vh}
+  /* sidebar: slide-in drawer */
+  #sidebar{position:fixed;left:0;top:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;height:100vh;width:var(--sw)!important;min-width:var(--sw)!important}
   #sidebar.mob-open{transform:translateX(0)}
-  #sidebar.col{width:var(--sw);min-width:var(--sw)}
   #sidebar.col .sb-logo-text,#sidebar.col .sb-txt,#sidebar.col .sb-cnt,#sidebar.col .sb-lbl,#sidebar.col .sb-era{opacity:1;pointer-events:auto}
+  /* topbar swap */
   .mob-bar{display:flex}
   .topbar{display:none}
-  .dash-wrap,.plat-wrap,.section-wrap{padding:0 14px 24px}
-  .charts-grid{grid-template-columns:1fr}
-  .fgrid{grid-template-columns:1fr}
+  /* spacing */
+  .dash-wrap,.plat-wrap,.section-wrap{padding:0 12px 24px}
+  /* charts: single column */
+  .charts-grid{grid-template-columns:1fr;gap:10px}
+  /* quick stats: 2x2 + 3 on mobile for 7-col, 2-col for 4-col */
+  .qstats-7{grid-template-columns:repeat(4,1fr)}
+  .qstats-4{grid-template-columns:repeat(2,1fr)}
+  .qstat{padding:8px 4px}
+  .qsv{font-size:16px}
+  .qsl{font-size:7px}
+  /* netflix grid: 2 columns on mobile */
+  .nf-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .nf-grid.large{grid-template-columns:repeat(2,1fr);gap:8px}
+  /* game card text */
+  .gc-name{font-size:11px}
+  .gc-badge{font-size:9px;padding:2px 5px}
+  /* form: single column */
+  .fgrid{grid-template-columns:1fr;gap:10px}
   .fgrid .s2{grid-column:1}
   .fgrid .fdivider{grid-column:1}
-  .qstats-7{grid-template-columns:repeat(4,1fr)}
-  .nf-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  /* recommender form */
   .rec-form-grid{grid-template-columns:1fr}
+  /* detail modal */
   .dmodal-grid{grid-template-columns:1fr}
+  /* filters bar: scrollable horizontal row */
+  .filters-bar{flex-wrap:nowrap;overflow-x:auto;padding:10px 12px;gap:6px;-webkit-overflow-scrolling:touch}
+  .filters-bar::-webkit-scrollbar{display:none}
+  .fbtn{flex-shrink:0}
+  .search-input{width:100%;flex-shrink:1}
+  .filter-sep{display:none}
+  /* topbar right: wrap & compact */
+  .topbar-right{gap:4px;flex-wrap:wrap}
+  /* section padding */
+  .section-hdr{padding-top:20px}
+  /* backlog priority cards */
+  .prio-card{padding:10px 12px;gap:10px}
+  .prio-rank{font-size:16px;width:22px}
+  .prio-cover{width:30px;height:40px}
+  .prio-name{font-size:12px}
+  /* achievements */
+  .achievements-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .ach{padding:10px}
+  .ach-ico{font-size:20px}
+  /* xp panel */
+  .xp-top{gap:10px}
+  .xp-level-badge{width:44px;height:44px}
+  .xp-level-num{font-size:18px}
+  .xp-rank{font-size:14px}
+  /* modal */
+  #moverlay{padding:10px}
+  .modal{max-height:95vh;border-radius:10px}
+  .mbody{padding:14px 16px 16px}
+  .mhdr{padding:14px 16px 0}
+  .macts{padding:0 16px 14px!important}
+  /* plat checkboxes */
+  .plat-checks{max-height:160px}
+  /* rec result */
+  .rec-result{flex-direction:column;gap:12px}
+  .rec-result-cover{width:100%;height:120px;border-radius:8px}
+  /* donut chart */
+  .donut-wrap{justify-content:center}
+  /* plat page header */
+  .plat-hdr{gap:10px}
+  .plat-icon-lg{font-size:26px}
+  .plat-name-lg{font-size:18px}
+  .plat-wrap{padding:14px 12px}
+  /* mob backup buttons: icons only on very small */
+}
+ 
+/* ─── PHONE 9:16 / SMALL (≤ 400px) ─── */
+@media(max-width:400px){
+  .nf-grid,.nf-grid.large{grid-template-columns:repeat(2,1fr);gap:6px}
+  .qstats-7{grid-template-columns:repeat(2,1fr)}
+  .qstats-4{grid-template-columns:repeat(2,1fr)}
+  .qstat{padding:7px 3px}
+  .qsv{font-size:14px;letter-spacing:-.5px}
+  .section-wrap,.dash-wrap,.plat-wrap{padding:0 8px 20px}
+  .filters-bar{padding:8px}
+  .topbar-right .btn-ghost{display:none}
+  /* show icon-only on tiny screens */
+  .btn-ghost.btn-sm::before{content:attr(data-icon)}
+  .section-hdr{padding-top:16px}
+  .charts-grid{gap:8px}
+  .chart-card{padding:14px}
 }
 </style>
 </head>
@@ -292,7 +386,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <button class="mob-mbtn" onclick="toggleMobSb()">
     <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
   </button>
-  <span class="mob-logo">Game<span>Tracker</span></span>
+  <span class="mob-logo" style="flex:1">Game<span>Tracker</span></span>
+  <button class="btn btn-primary btn-sm" style="padding:6px 12px;font-size:11px" onclick="openModal()">+ Jogo</button>
 </div>
 <div id="sboverlay" onclick="toggleMobSb()"></div>
  
@@ -356,8 +451,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="topbar">
       <div class="topbar-title">Dashboard</div>
       <div class="topbar-right">
-        <button class="btn btn-ghost btn-sm" onclick="exportBackup()" title="Exportar backup JSON">⬇ Exportar</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()" title="Importar backup JSON">⬆ Importar</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportBackup()" title="Exportar backup JSON" data-icon="⬇">⬇ Exportar</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()" title="Importar backup JSON" data-icon="⬆">⬆ Importar</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
         <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
       </div>
