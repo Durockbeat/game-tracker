@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameTracker Pessoal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0c;--sidebar:#0d0d10;--surface:#141418;--surface2:#1c1c22;--surface3:#242430;
+  --border:#26262f;--border2:#32323e;
+  --accent:#c8f135;--accent2:#ff6b35;
+  --text:#f0f0f5;--text2:#9090a0;--text3:#4a4a58;
+  --green:#4ade80;--blue:#60a5fa;--purple:#a78bfa;--orange:#fb923c;
+  --pink:#f472b6;--yellow:#facc15;--red:#f87171;--cyan:#22d3ee;
+  --r:10px;--r-sm:6px;--sw:248px;--swc:58px;--tr:0.16s ease;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ═══ SIDEBAR ═══ */
+#sidebar{width:var(--sw);min-width:var(--sw);background:var(--sidebar);border-right:1px solid var(--border);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;transition:width .2s ease,min-width .2s ease;overflow:hidden;z-index:100;flex-shrink:0}
+#sidebar.col{width:var(--swc);min-width:var(--swc)}
+.sb-logo{display:flex;align-items:center;gap:10px;padding:18px 14px 14px;border-bottom:1px solid var(--border);flex-shrink:0;position:relative}
+.sb-logo-icon{width:26px;height:26px;border-radius:6px;background:var(--accent);display:grid;place-items:center;flex-shrink:0;color:#0a0a0c;font-size:14px}
+.sb-logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;letter-spacing:-.5px;white-space:nowrap}
+.sb-logo-text span{color:var(--accent)}
+.sb-tog{position:absolute;top:50%;right:-11px;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;display:grid;place-items:center;color:var(--text2);transition:all var(--tr);z-index:10}
+.sb-tog:hover{background:var(--surface3);color:var(--text)}
+#sidebar.col .sb-logo-text,#sidebar.col .sb-txt,#sidebar.col .sb-cnt,#sidebar.col .sb-lbl,#sidebar.col .sb-era{opacity:0;pointer-events:none}
+.sb-sec{padding:10px 8px 3px;flex-shrink:0}
+.sb-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:0 8px 5px;white-space:nowrap;display:block}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--tr);white-space:nowrap;overflow:hidden;margin-bottom:1px;position:relative}
+.sb-item:hover{background:var(--surface2)}
+.sb-item.active{background:var(--surface3)}
+.sb-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:2px;background:var(--accent);border-radius:2px}
+.sb-ico{width:18px;height:18px;flex-shrink:0;display:grid;place-items:center;font-size:13px}
+.sb-txt{font-size:12.5px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;transition:color var(--tr)}
+.sb-item.active .sb-txt,.sb-item:hover .sb-txt{color:var(--text)}
+.sb-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:var(--surface3);padding:1px 6px;border-radius:100px;flex-shrink:0}
+.sb-plats{overflow-y:auto;flex:1;padding:0 0 12px}
+.sb-era{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);padding:8px 16px 3px;font-family:'DM Mono',monospace;display:block}
+
+/* XP bar in sidebar */
+.sb-xp{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.sb-xp-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;white-space:nowrap;overflow:hidden}
+.sb-xp-lvl{font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:var(--accent)}
+.sb-xp-pts{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+.sb-xp-bar{height:4px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.sb-xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),#8aff00);border-radius:4px;transition:width .6s cubic-bezier(.34,1.1,.64,1)}
+.sb-xp-name{font-size:10px;color:var(--text2);margin-bottom:4px}
+#sidebar.col .sb-xp{padding:8px}
+#sidebar.col .sb-xp-hdr,#sidebar.col .sb-xp-name{display:none}
+
+/* ═══ MAIN ═══ */
+#main{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;height:100vh}
+.page{display:none;animation:fu .2s ease}
+.page.active{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ TOPBAR ═══ */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,12,.94);backdrop-filter:blur(16px);z-index:50;gap:10px;flex-wrap:wrap}
+.topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.5px}
+.topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* ═══ BUTTONS ═══ */
+.btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.3px;padding:8px 16px;border-radius:var(--r-sm);border:none;cursor:pointer;transition:all var(--tr);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#0a0a0c}
+.btn-primary:hover{background:#d8ff4a;transform:translateY(-1px);box-shadow:0 4px 18px rgba(200,241,53,.3)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--text);border-color:var(--text2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+
+/* ═══ QUICK STATS BAR ═══ */
+.qstats{display:grid;gap:0;border-bottom:1px solid var(--border);background:var(--sidebar);flex-shrink:0}
+.qstats-7{grid-template-columns:repeat(7,1fr)}
+.qstats-4{grid-template-columns:repeat(4,1fr)}
+.qstat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;border-right:1px solid var(--border);cursor:default;transition:background var(--tr)}
+.qstat:last-child{border-right:none}
+.qstat:hover{background:var(--surface2)}
+.qsv{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-1px;line-height:1}
+.qsl{font-size:8px;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-top:2px;white-space:nowrap}
+
+/* ═══ SECTION ROWS (Netflix style) ═══ */
+.section-wrap{padding:0 24px 32px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:28px}
+.section-ttl{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.section-ttl span{color:var(--text3);font-size:12px;font-weight:400;margin-left:8px}
+.see-all{font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.3px;transition:opacity var(--tr)}
+.see-all:hover{opacity:.7}
+
+/* ═══ NETFLIX GRID ═══ */
+.nf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+
+/* ═══ GAME CARD ═══ */
+.gc{position:relative;border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .22s ease,box-shadow .22s ease;background:var(--surface);border:1px solid var(--border);group:1}
+.gc:hover{transform:scale(1.04);box-shadow:0 12px 40px rgba(0,0,0,.7);z-index:2;border-color:var(--border2)}
+.gc-cover{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:var(--surface2)}
+.gc-cover-placeholder{width:100%;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--surface2),var(--surface3));gap:8px}
+.gc-cover-placeholder .ph-ico{font-size:32px;opacity:.4}
+.gc-cover-placeholder .ph-txt{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:0 8px;letter-spacing:.5px;text-transform:uppercase}
+.gc-gradient{position:absolute;bottom:0;left:0;right:0;height:70%;background:linear-gradient(to top,rgba(10,10,12,.98) 0%,rgba(10,10,12,.6) 60%,transparent 100%);pointer-events:none}
+.gc-body{position:absolute;bottom:0;left:0;right:0;padding:10px 10px 10px}
+.gc-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;letter-spacing:-.2px;line-height:1.2;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gc-meta{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.gc-plat-ico{font-size:10px;line-height:1}
+.gc-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:100px;white-space:nowrap}
+.gb-Finalizado{background:rgba(200,241,53,.15);color:var(--accent);border:1px solid rgba(200,241,53,.25)}
+.gb-Jogando{background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.gb-Backlog{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+.gb-Desejos{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)}
+.gc-score{position:absolute;top:8px;right:8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;background:rgba(10,10,12,.8);backdrop-filter:blur(4px);padding:2px 7px;border-radius:100px;color:var(--accent)}
+.gc-actions{position:absolute;top:8px;left:8px;display:flex;gap:4px;opacity:0;transition:opacity var(--tr)}
+.gc:hover .gc-actions{opacity:1}
+.gc-act-btn{width:26px;height:26px;border-radius:5px;border:none;background:rgba(10,10,12,.85);backdrop-filter:blur(4px);cursor:pointer;display:grid;place-items:center;color:var(--text2);transition:all var(--tr)}
+.gc-act-btn:hover{color:var(--text);background:rgba(30,30,40,.95)}
+.gc-act-btn.del:hover{color:var(--red)}
+.gc-hours{position:absolute;bottom:8px;right:8px;font-size:9px;color:var(--orange);font-family:'DM Mono',monospace;opacity:.8}
+
+/* ═══ DASHBOARD CHARTS ═══ */
+.dash-wrap{padding:0 24px 32px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px}
+.chart-ttl{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.bar-list{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:9px}
+.bar-lbl{font-size:11px;color:var(--text2);width:86px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.34,1.1,.64,1)}
+.bar-n{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);width:24px;text-align:right;flex-shrink:0}
+.donut-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ═══ GAMIFICATION ═══ */
+.xp-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.xp-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),transparent)}
+.xp-top{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.xp-level-badge{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8aff00);display:grid;place-items:center;flex-shrink:0;box-shadow:0 0 24px rgba(200,241,53,.35)}
+.xp-level-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#0a0a0c;line-height:1}
+.xp-info{flex:1}
+.xp-rank{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:-.3px}
+.xp-pts-row{font-size:12px;color:var(--text2);margin-top:3px;font-family:'DM Mono',monospace}
+.xp-bar-wrap{margin-top:10px}
+.xp-bar-track{height:6px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),#8aff00);border-radius:4px;transition:width .8s cubic-bezier(.34,1.1,.64,1)}
+.xp-bar-lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;font-family:'DM Mono',monospace}
+.achievements-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.ach{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r-sm);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;transition:all var(--tr)}
+.ach.unlocked{border-color:rgba(200,241,53,.3);background:rgba(200,241,53,.05)}
+.ach.locked{opacity:.4;filter:grayscale(.8)}
+.ach-ico{font-size:24px}
+.ach-name{font-size:10px;font-weight:600;color:var(--text);letter-spacing:.3px}
+.ach-desc{font-size:9px;color:var(--text3)}
+.ach-xp{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-top:2px}
+
+/* ═══ BACKLOG PRIORITY ═══ */
+.priority-section{display:flex;flex-direction:column;gap:8px}
+.prio-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:14px;transition:all var(--tr);cursor:pointer}
+.prio-card:hover{border-color:var(--border2);transform:translateX(3px)}
+.prio-rank{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text3);width:28px;text-align:center;flex-shrink:0}
+.prio-cover{width:36px;height:48px;border-radius:5px;object-fit:cover;background:var(--surface2);flex-shrink:0;font-size:20px;display:grid;place-items:center}
+.prio-info{flex:1;min-width:0}
+.prio-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.prio-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--text2)}
+.prio-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--orange)}
+.prio-badge{font-size:9px;padding:1px 6px;border-radius:100px;background:var(--surface3);color:var(--text2)}
+
+/* ═══ RECOMMENDER ═══ */
+.rec-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:18px}
+.rec-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.rec-result{background:linear-gradient(135deg,rgba(200,241,53,.06),rgba(200,241,53,.02));border:1px solid rgba(200,241,53,.2);border-radius:var(--r);padding:20px;display:flex;gap:16px;align-items:center;animation:fu .3s ease}
+.rec-result-cover{width:60px;height:80px;border-radius:7px;object-fit:cover;background:var(--surface2);flex-shrink:0;font-size:28px;display:grid;place-items:center}
+.rec-result-info{flex:1;min-width:0}
+.rec-result-name{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px}
+.rec-result-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.rec-why{font-size:11px;color:var(--text2);font-style:italic}
+.rec-empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+
+/* ═══ FILTERS BAR ═══ */
+.filters-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--sidebar)}
+.fbtn{font-size:11px;font-weight:500;padding:5px 13px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--tr);font-family:'DM Sans',sans-serif}
+.fbtn:hover{border-color:var(--text2);color:var(--text)}
+.fbtn.active{background:rgba(200,241,53,.09);border-color:var(--accent);color:var(--accent)}
+.filter-sep{width:1px;height:16px;background:var(--border2);flex-shrink:0}
+.search-input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border-radius:100px;outline:none;width:180px;transition:border-color var(--tr)}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--text3)}
+
+/* ═══ PLATFORM PAGE ═══ */
+.plat-wrap{padding:22px 24px}
+.plat-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.plat-icon-lg{font-size:32px;line-height:1}
+.plat-name-lg{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.7px}
+.chips-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip{font-size:11px;padding:2px 10px;border-radius:100px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+
+/* ═══ MODAL ═══ */
+#moverlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;place-items:center;z-index:200;backdrop-filter:blur(6px);padding:16px}
+#moverlay.open{display:grid}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:580px;position:relative;overflow:hidden;animation:mi .2s cubic-bezier(.34,1.2,.64,1);max-height:90vh;display:flex;flex-direction:column}
+@keyframes mi{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),transparent);z-index:1}
+.mhdr{padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.mttl{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--accent)}
+.mclose{width:26px;height:26px;border-radius:5px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);display:grid;place-items:center;transition:all var(--tr)}
+.mclose:hover{color:var(--text);border-color:var(--text2)}
+.mbody{padding:18px 20px 20px;overflow-y:auto;flex:1}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fgrid .s2{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);font-weight:500}
+.fld input,.fld select,.fld textarea{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;border-radius:var(--r-sm);outline:none;transition:border-color var(--tr),box-shadow var(--tr);width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,241,53,.08)}
+.fld select option{background:#1c1c22}
+.fld textarea{resize:vertical;min-height:68px;line-height:1.5}
+.fdivider{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:6px 0 0;font-family:'DM Mono',monospace;border-top:1px solid var(--border);margin-top:4px;grid-column:1/-1}
+.macts{display:flex;gap:8px;margin-top:16px;flex-shrink:0}
+/* multi-plat checkboxes */
+.plat-checks{display:flex;flex-wrap:wrap;gap:5px;grid-column:1/-1;max-height:220px;overflow-y:auto;padding:4px 2px}
+.plat-era-hdr{font-size:9px;letter-spacing:.9px;text-transform:uppercase;color:var(--text3);padding:6px 2px 3px;width:100%;font-family:'DM Mono',monospace;pointer-events:none}
+.pci{display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;padding:4px 9px;border-radius:100px;border:1px solid var(--border2);background:transparent;transition:border-color var(--tr),background var(--tr),color var(--tr);color:var(--text2);user-select:none;white-space:nowrap}
+.pci:hover{border-color:var(--text2);color:var(--text)}
+.pci[data-sel="1"]{background:rgba(200,241,53,.12);border-color:var(--accent);color:var(--accent)}
+
+/* ═══ DETAIL MODAL ═══ */
+#doverlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;place-items:center;z-index:210;backdrop-filter:blur(8px);padding:16px}
+#doverlay.open{display:grid}
+.dmodal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:640px;overflow:hidden;animation:mi .2s cubic-bezier(.34,1.2,.64,1);max-height:90vh;overflow-y:auto}
+.dmodal-cover{width:100%;height:200px;object-fit:cover;object-position:center top;display:block;background:var(--surface2)}
+.dmodal-cover-ph{width:100%;height:200px;background:linear-gradient(135deg,var(--surface2),var(--surface3));display:grid;place-items:center;font-size:64px}
+.dmodal-body{padding:20px}
+.dmodal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+.dmodal-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.6px}
+.dmodal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);display:grid;place-items:center;flex-shrink:0;transition:all var(--tr)}
+.dmodal-close:hover{color:var(--text)}
+.dmodal-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.dmodal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.dmodal-field{display:flex;flex-direction:column;gap:3px}
+.dmodal-field-lbl{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text3)}
+.dmodal-field-val{font-size:13px;color:var(--text)}
+.dmodal-obs{background:var(--surface2);border-radius:var(--r-sm);padding:12px;font-size:13px;color:var(--text2);font-style:italic;line-height:1.6;margin-bottom:14px}
+.dmodal-actions{display:flex;gap:8px}
+
+/* ═══ EMPTY ═══ */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-ico{font-size:40px;margin-bottom:12px;opacity:.3}
+.empty h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text2);margin-bottom:5px}
+.empty p{font-size:12px}
+
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(55px);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12px;padding:9px 18px;border-radius:100px;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .28s cubic-bezier(.34,1.3,.64,1),opacity .28s;opacity:0;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ═══ MOBILE ═══ */
+.mob-bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--sidebar);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
+.mob-mbtn{width:30px;height:30px;border-radius:5px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);display:grid;place-items:center}
+.mob-logo{font-family:'Syne',sans-serif;font-size:14px;font-weight:800}
+.mob-logo span{color:var(--accent)}
+#sboverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
+
+@media(max-width:760px){
+  #sidebar{position:fixed;left:0;top:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;height:100vh}
+  #sidebar.mob-open{transform:translateX(0)}
+  #sidebar.col{width:var(--sw);min-width:var(--sw)}
+  #sidebar.col .sb-logo-text,#sidebar.col .sb-txt,#sidebar.col .sb-cnt,#sidebar.col .sb-lbl,#sidebar.col .sb-era{opacity:1;pointer-events:auto}
+  .mob-bar{display:flex}
+  .topbar{display:none}
+  .dash-wrap,.plat-wrap,.section-wrap{padding:0 14px 24px}
+  .charts-grid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .fgrid .s2{grid-column:1}
+  .fgrid .fdivider{grid-column:1}
+  .qstats-7{grid-template-columns:repeat(4,1fr)}
+  .nf-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  .rec-form-grid{grid-template-columns:1fr}
+  .dmodal-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="mob-bar">
+  <button class="mob-mbtn" onclick="toggleMobSb()">
+    <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <span class="mob-logo">Game<span>Tracker</span></span>
+</div>
+<div id="sboverlay" onclick="toggleMobSb()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎮</div>
+    <div class="sb-logo-text">Game<span>Tracker</span></div>
+    <button class="sb-tog" id="sb-tog" onclick="toggleSb()">
+      <svg width="9" height="9" fill="none" viewBox="0 0 9 9" id="sb-tog-ico"><path d="M5.5 1.5L3 4.5l2.5 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+  <div class="sb-sec">
+    <span class="sb-lbl">Menu</span>
+    <div class="sb-item active" id="nav-dash" onclick="navigate('dashboard')">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><rect x="1" y="1" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="1" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="8" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="8" y="8" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg></div>
+      <span class="sb-txt">Dashboard</span>
+    </div>
+    <div class="sb-item" id="nav-library" onclick="navigate('library')">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><rect x="1" y="1" width="4" height="12" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="7" y="1" width="4" height="12" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="13" y="3" width="1" height="8" rx=".5" stroke="currentColor" stroke-width="1.3"/></svg></div>
+      <span class="sb-txt">Biblioteca</span>
+      <span class="sb-cnt" id="sb-total">0</span>
+    </div>
+    <div class="sb-item" id="nav-backlog" onclick="navigate('backlog')">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><path d="M1 7h12M1 3h12M1 11h7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-txt">Backlog</span>
+      <span class="sb-cnt" id="sb-bkl">0</span>
+    </div>
+    <div class="sb-item" id="nav-rec" onclick="navigate('recommender')">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M5 7l1.5 1.5L9 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="sb-txt">Qual Jogar?</span>
+    </div>
+    <div class="sb-item" id="nav-ach" onclick="navigate('achievements')">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><path d="M7 1l1.5 4h4l-3.5 2.5L10 12 7 9.5 4 12l1-4.5L1.5 5h4L7 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></div>
+      <span class="sb-txt">Conquistas</span>
+    </div>
+    <div class="sb-item" onclick="openModal()">
+      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5V9.5M4.5 7h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-txt">Adicionar Jogo</span>
+    </div>
+  </div>
+  <div class="sb-sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0">
+    <span class="sb-lbl">Plataformas</span>
+    <div class="sb-plats" id="sb-plats"></div>
+  </div>
+  <div class="sb-xp" id="sb-xp-wrap">
+    <div class="sb-xp-name" id="sb-xp-name">Iniciante</div>
+    <div class="sb-xp-hdr">
+      <span class="sb-xp-lvl" id="sb-xp-lvl">Nível 1</span>
+      <span class="sb-xp-pts" id="sb-xp-pts">0 XP</span>
+    </div>
+    <div class="sb-xp-bar"><div class="sb-xp-fill" id="sb-xp-fill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div id="pg-dash" class="page active">
+    <div class="topbar">
+      <div class="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
+      </div>
+    </div>
+    <div class="qstats qstats-7" id="qs-dash">
+      <div class="qstat"><div class="qsv" id="qs-total" style="color:var(--text)">0</div><div class="qsl">Total</div></div>
+      <div class="qstat"><div class="qsv" id="qs-fin" style="color:var(--accent)">0</div><div class="qsl">Finalizados</div></div>
+      <div class="qstat"><div class="qsv" id="qs-jog" style="color:var(--purple)">0</div><div class="qsl">Jogando</div></div>
+      <div class="qstat"><div class="qsv" id="qs-bkl" style="color:var(--blue)">0</div><div class="qsl">Backlog</div></div>
+      <div class="qstat"><div class="qsv" id="qs-wish" style="color:var(--pink)">0</div><div class="qsl">Desejos</div></div>
+      <div class="qstat"><div class="qsv" id="qs-hrs" style="color:var(--orange)">0h</div><div class="qsl">Jogadas</div></div>
+      <div class="qstat"><div class="qsv" id="qs-backh" style="color:var(--yellow)">0h</div><div class="qsl">Backlog Est.</div></div>
+    </div>
+    <div class="section-wrap">
+      <div class="section-hdr"><span class="section-ttl">Jogando Agora</span><span class="see-all" onclick="navigate('library','Jogando')">Ver todos</span></div>
+      <div class="nf-grid large" id="dash-playing"></div>
+      <div class="section-hdr" style="margin-top:8px"><span class="section-ttl">Recém Finalizados</span><span class="see-all" onclick="navigate('library','Finalizado')">Ver todos</span></div>
+      <div class="nf-grid" id="dash-finished"></div>
+      <div class="section-hdr" style="margin-top:8px"><span class="section-ttl">Análises</span></div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-ttl">Por Status</div><div class="donut-wrap" id="d-donut"></div></div>
+        <div class="chart-card"><div class="chart-ttl">Top Plataformas</div><div class="bar-list" id="d-plats"></div></div>
+        <div class="chart-card"><div class="chart-ttl">Por Gênero</div><div class="bar-list" id="d-genres"></div></div>
+        <div class="chart-card"><div class="chart-ttl">Adicionados Recentemente</div><div id="d-recent" style="display:flex;flex-direction:column;gap:7px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div id="pg-library" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Biblioteca <span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:13px" id="lib-count"></span></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
+      </div>
+    </div>
+    <div class="filters-bar">
+      <input class="search-input" type="text" id="lib-search" placeholder="🔍 Buscar jogo…" oninput="renderLibrary()">
+      <div class="filter-sep"></div>
+      <button class="fbtn active" onclick="setLibFilter('status','Todos',this)">Todos</button>
+      <button class="fbtn" onclick="setLibFilter('status','Jogando',this)">Jogando</button>
+      <button class="fbtn" onclick="setLibFilter('status','Finalizado',this)">Finalizados</button>
+      <button class="fbtn" onclick="setLibFilter('status','Backlog',this)">Backlog</button>
+      <button class="fbtn" onclick="setLibFilter('status','Desejos',this)">Desejos</button>
+    </div>
+    <div class="section-wrap" style="padding-top:20px">
+      <div class="nf-grid" id="lib-grid"></div>
+      <div class="empty" id="lib-empty" style="display:none">
+        <div class="empty-ico">🕹️</div><h3>Nenhum jogo encontrado</h3><p>Tente outro filtro ou adicione um jogo.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKLOG PRIORITY -->
+  <div id="pg-backlog" class="page">
+    <div class="topbar">
+      <div class="topbar-title">Backlog Inteligente</div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
+      </div>
+    </div>
+    <div class="qstats qstats-4">
+      <div class="qstat"><div class="qsv" id="bkl-total" style="color:var(--blue)">0</div><div class="qsl">No Backlog</div></div>
+      <div class="qstat"><div class="qsv" id="bkl-short" style="color:var(--green)">0</div><div class="qsl">Curtos (‹15h)</div></div>
+      <div class="qstat"><div class="qsv" id="bkl-med" style="color:var(--yellow)">0</div><div class="qsl">Médios (15–40h)</div></div>
+      <div class="qstat"><div class="qsv" id="bkl-long" style="color:var(--red)">0</div><div class="qsl">Longos (›40h)</div></div>
+    </div>
+    <div class="section-wrap" style="padding-top:20px">
+      <div class="section-hdr"><span class="section-ttl">🟢 Curta Duração <span style="font-size:11px;color:var(--text3)">(‹15h estimadas)</span></span></div>
+      <div class="priority-section" id="bkl-list-short"></div>
+      <div class="section-hdr"><span class="section-ttl">🟡 Média Duração <span style="font-size:11px;color:var(--text3)">(15–40h)</span></span></div>
+      <div class="priority-section" id="bkl-list-med"></div>
+      <div class="section-hdr"><span class="section-ttl">🔴 Longa Duração <span style="font-size:11px;color:var(--text3)">(›40h ou sem estimativa)</span></span></div>
+      <div class="priority-section" id="bkl-list-long"></div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDER -->
+  <div id="pg-rec" class="page">
+    <div class="topbar"><div class="topbar-title">Qual Jogar Agora?</div></div>
+    <div class="section-wrap" style="padding-top:24px">
+      <div class="rec-form">
+        <div class="chart-ttl" style="margin-bottom:14px">Diga o que você tem disponível</div>
+        <div class="rec-form-grid">
+          <div class="fld"><label>Tempo disponível (horas)</label><input type="number" id="rec-time" placeholder="Ex: 2" min="0.5" step="0.5"></div>
+          <div class="fld"><label>Plataforma desejada</label><select id="rec-plat"><option value="">Qualquer</option></select></div>
+          <div class="fld"><label>Gênero preferido</label><input type="text" id="rec-genre" placeholder="RPG, FPS, Aventura…"></div>
+          <div class="fld"><label>Dificuldade desejada</label>
+            <select id="rec-diff">
+              <option value="">Qualquer</option>
+              <option value="Fácil">Fácil</option>
+              <option value="Médio">Médio</option>
+              <option value="Difícil">Difícil</option>
+              <option value="Muito Difícil">Muito Difícil</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="recommend()">🎯 Recomendar</button>
+      </div>
+      <div id="rec-result"></div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div id="pg-ach" class="page">
+    <div class="topbar"><div class="topbar-title">Conquistas & XP</div></div>
+    <div class="section-wrap" style="padding-top:24px">
+      <div class="xp-panel" id="xp-panel-main"></div>
+      <div class="section-hdr"><span class="section-ttl">Conquistas</span></div>
+      <div class="achievements-grid" id="ach-grid"></div>
+    </div>
+  </div>
+
+  <!-- PLATFORM PAGE -->
+  <div id="pg-plat" class="page">
+    <div class="topbar">
+      <div class="topbar-title" id="pt-title">Plataforma</div>
+      <div class="topbar-right"><button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button></div>
+    </div>
+    <div class="filters-bar">
+      <button class="fbtn active" onclick="setPlatFilter('Todos',this)">Todos</button>
+      <button class="fbtn" onclick="setPlatFilter('Jogando',this)">Jogando</button>
+      <button class="fbtn" onclick="setPlatFilter('Finalizado',this)">Finalizados</button>
+      <button class="fbtn" onclick="setPlatFilter('Backlog',this)">Backlog</button>
+      <button class="fbtn" onclick="setPlatFilter('Desejos',this)">Desejos</button>
+    </div>
+    <div class="plat-wrap">
+      <div class="plat-hdr">
+        <div class="plat-icon-lg" id="pt-icon"></div>
+        <div>
+          <div class="plat-name-lg" id="pt-name"></div>
+          <div class="chips-row" id="pt-chips"></div>
+        </div>
+      </div>
+      <div class="nf-grid" id="pt-grid"></div>
+      <div class="empty" id="pt-empty" style="display:none">
+        <div class="empty-ico">🕹️</div><h3>Nenhum jogo aqui</h3><p>Adicione um jogo nesta plataforma.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ═══ ADD/EDIT MODAL ═══ -->
+<div id="moverlay">
+  <div class="modal">
+    <div class="mhdr">
+      <span class="mttl" id="m-title">+ Adicionar Jogo</span>
+      <button class="mclose" onclick="closeModal()"><svg width="9" height="9" fill="none" viewBox="0 0 9 9"><path d="M1 1l7 7M8 1L1 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    </div>
+    <div class="mbody">
+      <div class="fgrid">
+        <div class="fld s2"><label>Nome do Jogo *</label><input type="text" id="f-name" placeholder="Ex: The Legend of Zelda" autocomplete="off"></div>
+        <div class="fld s2"><label>Capa do Jogo (URL)</label><input type="text" id="f-cover" placeholder="https://… (campo opcional para API futura)"></div>
+        <div class="fdivider">Plataformas</div>
+        <div class="fld s2">
+          <label>Plataformas Disponíveis (marque todas)</label>
+          <div class="plat-checks" id="plat-checks"></div>
+        </div>
+        <div class="fld"><label>Plataforma Principal Jogada</label><select id="f-plat-main"></select></div>
+        <div class="fld"><label>Status</label>
+          <select id="f-status">
+            <option value="Backlog">Backlog</option>
+            <option value="Jogando">Jogando</option>
+            <option value="Finalizado">Finalizado</option>
+            <option value="Desejos">Lista de Desejos</option>
+          </select>
+        </div>
+        <div class="fdivider">Detalhes</div>
+        <div class="fld"><label>Gênero</label><input type="text" id="f-genre" placeholder="RPG, FPS, Plataforma…" autocomplete="off"></div>
+        <div class="fld"><label>Ano de Lançamento</label><input type="number" id="f-year" placeholder="Ex: 1985" min="1950" max="2099"></div>
+        <div class="fld"><label>Nota Pessoal (0–10)</label><input type="number" id="f-score" placeholder="Ex: 9.5" min="0" max="10" step="0.5"></div>
+        <div class="fld"><label>Dificuldade</label>
+          <select id="f-diff">
+            <option value="">Não informado</option>
+            <option value="Fácil">Fácil</option>
+            <option value="Médio">Médio</option>
+            <option value="Difícil">Difícil</option>
+            <option value="Muito Difícil">Muito Difícil</option>
+          </select>
+        </div>
+        <div class="fdivider">Progresso</div>
+        <div class="fld"><label>Data de Início</label><input type="date" id="f-datestart"></div>
+        <div class="fld"><label>Data de Finalização</label><input type="date" id="f-dateend"></div>
+        <div class="fld"><label>Tempo Jogado (horas)</label><input type="number" id="f-hours" placeholder="Ex: 42" min="0" step="0.5"></div>
+        <div class="fld"><label>Tempo Médio Estimado (h)</label><input type="number" id="f-avgtime" placeholder="Ex: 30" min="0" step="1"></div>
+        <div class="fld s2"><label>Observações</label><textarea id="f-obs" placeholder="Notas livres, dicas, memórias…"></textarea></div>
+        <!-- Hidden RAWG fields -->
+        <input type="hidden" id="f-rawg-id">
+        <input type="hidden" id="f-rawg-release">
+        <input type="hidden" id="f-rawg-genres">
+      </div>
+    </div>
+    <div class="macts" style="padding:0 20px 18px;flex-shrink:0">
+      <button class="btn btn-primary" id="btn-save" onclick="saveGame()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DETAIL MODAL ═══ -->
+<div id="doverlay">
+  <div class="dmodal">
+    <div id="dmodal-content"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// PLATFORMS
+// ══════════════════════════════════════════
+const ERAS = [
+  {era:'Clássico / Arcade',plats:[
+    {id:'Arcade',lbl:'Arcade',ico:'🕹️'},{id:'Atari2600',lbl:'Atari 2600',ico:'🕹️'},
+    {id:'Atari5200',lbl:'Atari 5200',ico:'🕹️'},{id:'Atari7800',lbl:'Atari 7800',ico:'🕹️'},
+    {id:'Coleco',lbl:'ColecoVision',ico:'🕹️'},{id:'Intelliv',lbl:'Intellivision',ico:'🕹️'},
+  ]},
+  {era:'8-bit',plats:[
+    {id:'NES',lbl:'NES / Famicom',ico:'👾'},{id:'MasterSys',lbl:'Master System',ico:'👾'},
+    {id:'GameBoy',lbl:'Game Boy',ico:'📱'},{id:'GameBoyPkt',lbl:'Game Boy Pocket',ico:'📱'},
+    {id:'PCEngine',lbl:'PC Engine',ico:'👾'},{id:'MSX',lbl:'MSX',ico:'🖥️'},
+  ]},
+  {era:'16-bit',plats:[
+    {id:'SNES',lbl:'SNES / SFC',ico:'🎮'},{id:'MegaDrive',lbl:'Mega Drive',ico:'🎮'},
+    {id:'GameGear',lbl:'Game Gear',ico:'📱'},{id:'SegaCD',lbl:'Sega CD',ico:'💿'},
+    {id:'32X',lbl:'32X',ico:'🎮'},{id:'NGCD',lbl:'Neo Geo CD',ico:'💿'},
+    {id:'NeoGeo',lbl:'Neo Geo',ico:'🕹️'},{id:'Jaguar',lbl:'Atari Jaguar',ico:'🕹️'},
+  ]},
+  {era:'32 / 64-bit',plats:[
+    {id:'PS1',lbl:'PlayStation 1',ico:'🟦'},{id:'N64',lbl:'Nintendo 64',ico:'🎮'},
+    {id:'Saturn',lbl:'Sega Saturn',ico:'🪐'},{id:'GBA',lbl:'Game Boy Advance',ico:'📱'},
+    {id:'3DO',lbl:'3DO',ico:'💿'},
+  ]},
+  {era:'6ª Geração',plats:[
+    {id:'PS2',lbl:'PlayStation 2',ico:'🟦'},{id:'GameCube',lbl:'GameCube',ico:'🟣'},
+    {id:'Xbox',lbl:'Xbox',ico:'🟢'},{id:'DC',lbl:'Dreamcast',ico:'🌀'},
+    {id:'GBA_SP',lbl:'GBA SP',ico:'📱'},{id:'NDS',lbl:'Nintendo DS',ico:'📱'},
+  ]},
+  {era:'7ª Geração',plats:[
+    {id:'PS3',lbl:'PlayStation 3',ico:'🟦'},{id:'Xbox360',lbl:'Xbox 360',ico:'🟢'},
+    {id:'Wii',lbl:'Wii',ico:'🎯'},{id:'PSP',lbl:'PSP',ico:'📱'},
+    {id:'DSi',lbl:'DSi',ico:'📱'},
+  ]},
+  {era:'8ª Geração',plats:[
+    {id:'PS4',lbl:'PlayStation 4',ico:'🟦'},{id:'XboxOne',lbl:'Xbox One',ico:'🟢'},
+    {id:'WiiU',lbl:'Wii U',ico:'🎯'},{id:'3DS',lbl:'Nintendo 3DS',ico:'📱'},
+    {id:'PSVita',lbl:'PS Vita',ico:'📱'},{id:'Switch',lbl:'Nintendo Switch',ico:'🔴'},
+    {id:'SwitchL',lbl:'Switch Lite',ico:'🔴'},
+  ]},
+  {era:'9ª Geração',plats:[
+    {id:'PS5',lbl:'PlayStation 5',ico:'🟦'},{id:'XboxSX',lbl:'Xbox Series X',ico:'🟢'},
+    {id:'XboxSS',lbl:'Xbox Series S',ico:'🟢'},{id:'SwitchO',lbl:'Switch OLED',ico:'🔴'},
+  ]},
+  {era:'PC / Mac',plats:[
+    {id:'PC',lbl:'PC (Windows)',ico:'🖥️'},{id:'Mac',lbl:'Mac',ico:'🍎'},
+    {id:'Linux',lbl:'Linux',ico:'🐧'},{id:'SteamDeck',lbl:'Steam Deck',ico:'🎮'},
+  ]},
+  {era:'Mobile / Outros',plats:[
+    {id:'Mobile',lbl:'Mobile',ico:'📲'},{id:'Browser',lbl:'Navegador',ico:'🌐'},
+    {id:'Outro',lbl:'Outro',ico:'❓'},
+  ]},
+];
+const PM={};
+ERAS.forEach(e=>e.plats.forEach(p=>{PM[p.id]=p;}));
+const ALL_PLATS=ERAS.flatMap(e=>e.plats);
+
+// ══════════════════════════════════════════
+// GAMIFICATION CONFIG
+// ══════════════════════════════════════════
+const RANKS=['Iniciante','Jogador Casual','Gamer','Veterano','Expert','Mestre','Lendário'];
+const XP_PER_LEVEL=200;
+const ACHIEVEMENTS_DEF=[
+  {id:'first_finish',ico:'🏆',name:'Primeiro Fim!',desc:'Finalize seu primeiro jogo',xp:25,check:g=>g.filter(x=>x.status==='Finalizado').length>=1},
+  {id:'five_finish',ico:'🥇',name:'Maratonista',desc:'5 jogos finalizados',xp:50,check:g=>g.filter(x=>x.status==='Finalizado').length>=5},
+  {id:'ten_finish',ico:'👑',name:'Colecionador',desc:'10 jogos finalizados',xp:100,check:g=>g.filter(x=>x.status==='Finalizado').length>=10},
+  {id:'first_retro',ico:'👾',name:'Retrô Gamer',desc:'Jogue um clássico 8-bit ou 16-bit',xp:15,check:g=>g.some(x=>['NES','MasterSys','SNES','MegaDrive','GameBoy','PCEngine'].includes(x.platformMain))},
+  {id:'hundred_hours',ico:'⏱️',name:'Centenário',desc:'100 horas de jogo registradas',xp:75,check:g=>g.filter(x=>x.hours).reduce((s,x)=>s+parseFloat(x.hours),0)>=100},
+  {id:'first_score',ico:'⭐',name:'Crítico',desc:'Registre sua primeira nota',xp:10,check:g=>g.some(x=>x.score!=='')},
+  {id:'five_plats',ico:'🎯',name:'Multiplataforma',desc:'Jogue em 5 plataformas diferentes',xp:30,check:g=>new Set(g.filter(x=>x.platformMain).map(x=>x.platformMain)).size>=5},
+  {id:'wishlist_10',ico:'💭',name:'Sonhador',desc:'10 jogos na lista de desejos',xp:20,check:g=>g.filter(x=>x.status==='Desejos').length>=10},
+];
+
+// ══════════════════════════════════════════
+// STORAGE LAYER — works in artifact + offline
+// ══════════════════════════════════════════
+const KEY='gt_v4';
+
+// Check if window.storage (artifact API) is available
+function hasArtifactStorage(){
+  return typeof window.storage!=='undefined'&&window.storage!==null&&typeof window.storage.set==='function';
+}
+// Check if localStorage is available
+function hasLocalStorage(){
+  try{localStorage.setItem('__gt_test__','1');localStorage.removeItem('__gt_test__');return true;}
+  catch(e){return false;}
+}
+
+// In-memory fallback for sandboxed environments with no storage
+let _memStore={};
+
+function saveData(data){
+  const json=JSON.stringify(data);
+  if(hasArtifactStorage()){
+    try{
+      window.storage.set(KEY,json).catch(e=>console.warn('artifact storage set failed:',e));
+    }catch(e){console.warn('artifact storage error:',e);}
+  }
+  if(hasLocalStorage()){
+    try{localStorage.setItem(KEY,json);}
+    catch(e){console.error('localStorage save failed:',e);}
+  }
+  _memStore[KEY]=json; // always keep in memory as last-resort
+}
+
+function loadData(){
+  // 1. Try localStorage first (sync, reliable)
+  if(hasLocalStorage()){
+    try{
+      const raw=localStorage.getItem(KEY);
+      if(raw!==null&&raw!==''){
+        const parsed=JSON.parse(raw);
+        if(Array.isArray(parsed))return parsed;
+      }
+    }catch(e){console.warn('localStorage load error:',e);}
+  }
+  // 2. Try in-memory fallback
+  if(_memStore[KEY]){
+    try{
+      const parsed=JSON.parse(_memStore[KEY]);
+      if(Array.isArray(parsed))return parsed;
+    }catch(e){}
+  }
+  return [];
+}
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let games=loadData();
+
+// Migrate old data
+games=games.map(g=>{
+  if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
+  if(!Array.isArray(g.platforms)||!g.platforms.length){
+    g.platforms=g.platformMain?[g.platformMain]:[];
+  }
+  // Normalise: ensure all platform ids in g.platforms are strings
+  g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
+  if(g.status==='Lista de Desejos'){g.status='Desejos';}
+  return g;
+});
+saveData(games);
+
+let editId=null;
+let curPlat=null;
+let curPlatFilter='Todos';
+let curLibFilter={status:'Todos'};
+let sbCollapsed=false;
+
+function persist(){saveData(games);}
+
+// ══════════════════════════════════════════
+// XP & GAMIFICATION
+// ══════════════════════════════════════════
+function calcXP(){
+  let xp=0;
+  const fin=games.filter(g=>g.status==='Finalizado');
+  xp+=fin.length*25;
+  const jog=games.filter(g=>g.status==='Jogando');
+  xp+=jog.length*10;
+  const totalH=games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
+  xp+=Math.floor(totalH/10)*5;
+  const plats=new Set(games.filter(g=>g.platformMain).map(g=>g.platformMain));
+  xp+=plats.size*15;
+  const rated=games.filter(g=>g.score!=='');
+  if(rated.length>0)xp+=10;
+  return xp;
+}
+function getLevel(xp){return Math.floor(xp/XP_PER_LEVEL)+1;}
+function getLevelProgress(xp){return((xp%XP_PER_LEVEL)/XP_PER_LEVEL)*100;}
+function getRank(lvl){return RANKS[Math.min(lvl-1,RANKS.length-1)];}
+function getUnlocked(){return ACHIEVEMENTS_DEF.filter(a=>a.check(games)).map(a=>a.id);}
+
+function updateXPUI(){
+  const xp=calcXP();
+  const lvl=getLevel(xp);
+  const pct=getLevelProgress(xp);
+  const rank=getRank(lvl);
+  const next=lvl*XP_PER_LEVEL;
+  document.getElementById('sb-xp-name').textContent=rank;
+  document.getElementById('sb-xp-lvl').textContent=`Nível ${lvl}`;
+  document.getElementById('sb-xp-pts').textContent=`${xp}/${next} XP`;
+  document.getElementById('sb-xp-fill').style.width=pct+'%';
+}
+
+// ══════════════════════════════════════════
+// QUICK STATS
+// ══════════════════════════════════════════
+function updateQuickStats(){
+  const fin=games.filter(g=>g.status==='Finalizado').length;
+  const jog=games.filter(g=>g.status==='Jogando').length;
+  const bkl=games.filter(g=>g.status==='Backlog').length;
+  const wish=games.filter(g=>g.status==='Desejos').length;
+  // Unique by name (de-duplicate cross-platform)
+  const unique=new Set(games.map(g=>g.name.toLowerCase().trim())).size;
+  const totalH=games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
+  const backlogH=games.filter(g=>g.status==='Backlog'&&g.avgtime).reduce((s,g)=>s+parseFloat(g.avgtime),0);
+
+  document.getElementById('qs-total').textContent=unique;
+  document.getElementById('qs-fin').textContent=fin;
+  document.getElementById('qs-jog').textContent=jog;
+  document.getElementById('qs-bkl').textContent=bkl;
+  document.getElementById('qs-wish').textContent=wish;
+  document.getElementById('qs-hrs').textContent=totalH>0?Math.round(totalH)+'h':'0h';
+  document.getElementById('qs-backh').textContent=backlogH>0?Math.round(backlogH)+'h':'—';
+  document.getElementById('sb-total').textContent=unique;
+  document.getElementById('sb-bkl').textContent=bkl;
+}
+
+// ══════════════════════════════════════════
+// SIDEBAR BUILD
+// ══════════════════════════════════════════
+function buildSb(){
+  const cnt={};
+  games.forEach(g=>{
+    const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain||g.platform].filter(Boolean);
+    pids.forEach(pid=>{cnt[pid]=(cnt[pid]||0)+1;});
+  });
+  const container=document.getElementById('sb-plats');
+  let html='';
+  ERAS.forEach(e=>{
+    const vis=e.plats.filter(p=>cnt[p.id]>0);
+    if(!vis.length)return;
+    html+=`<span class="sb-era">${e.era}</span>`;
+    vis.forEach(p=>{
+      html+=`<div class="sb-item${curPlat===p.id?' active':''}" id="snav-${p.id}" onclick="navigate('platform','${p.id}')">
+        <div class="sb-ico">${p.ico}</div>
+        <span class="sb-txt">${p.lbl}</span>
+        <span class="sb-cnt">${cnt[p.id]}</span>
+      </div>`;
+    });
+  });
+  container.innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// SIDEBAR TOGGLE
+// ══════════════════════════════════════════
+function toggleSb(){
+  sbCollapsed=!sbCollapsed;
+  document.getElementById('sidebar').classList.toggle('col',sbCollapsed);
+  const ico=document.getElementById('sb-tog-ico');
+  ico.innerHTML=sbCollapsed
+    ?'<path d="M3.5 1.5L6 4.5l-2.5 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
+    :'<path d="M5.5 1.5L3 4.5l2.5 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+function toggleMobSb(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sboverlay');
+  const open=sb.classList.toggle('mob-open');
+  ov.style.display=open?'block':'none';
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function navigate(page,arg){
+  document.getElementById('sidebar').classList.remove('mob-open');
+  document.getElementById('sboverlay').style.display='none';
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+
+  if(page==='dashboard'){
+    curPlat=null;
+    document.getElementById('pg-dash').classList.add('active');
+    document.getElementById('nav-dash').classList.add('active');
+    renderDash();
+  } else if(page==='library'){
+    curPlat=null;
+    if(arg){setLibFilter('status',arg,null);}
+    document.getElementById('pg-library').classList.add('active');
+    document.getElementById('nav-library').classList.add('active');
+    renderLibrary();
+  } else if(page==='backlog'){
+    curPlat=null;
+    document.getElementById('pg-backlog').classList.add('active');
+    document.getElementById('nav-backlog').classList.add('active');
+    renderBacklog();
+  } else if(page==='recommender'){
+    curPlat=null;
+    document.getElementById('pg-rec').classList.add('active');
+    document.getElementById('nav-rec').classList.add('active');
+    buildRecSelect();
+  } else if(page==='achievements'){
+    curPlat=null;
+    document.getElementById('pg-ach').classList.add('active');
+    document.getElementById('nav-ach').classList.add('active');
+    renderAchievements();
+  } else if(page==='platform'){
+    curPlat=arg;
+    curPlatFilter='Todos';
+    document.getElementById('pg-plat').classList.add('active');
+    const nav=document.getElementById(`snav-${arg}`);
+    if(nav)nav.classList.add('active');
+    renderPlatPage(arg);
+  }
+}
+
+// ══════════════════════════════════════════
+// GAME CARD HTML
+// ══════════════════════════════════════════
+function platIcos(g){
+  const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);
+  return pids.slice(0,3).map(pid=>PM[pid]?.ico||'🎮').join('');
+}
+function gameCardHTML(g){
+  const hasCover=g.cover&&g.cover.trim();
+  const statusMap={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos'};
+  const coverHTML=hasCover
+    ?`<img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(g.name)}','${platIcos(g)}')">`
+    :`<div class="gc-cover-placeholder"><div class="ph-ico">${platIcos(g)||'🎮'}</div><div class="ph-txt">${esc(g.name)}</div></div>`;
+  return `<div class="gc" onclick="openDetail(${g.id})">
+    ${coverHTML}
+    <div class="gc-gradient"></div>
+    ${g.score!==''?`<div class="gc-score">★${g.score}</div>`:''}
+    <div class="gc-actions">
+      <button class="gc-act-btn" onclick="event.stopPropagation();editGame(${g.id})" title="Editar">
+        <svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M8.5 1.5l2 2-6 6H2.5V7.5L8.5 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="gc-act-btn del" onclick="event.stopPropagation();deleteGame(${g.id})" title="Excluir">
+        <svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 3h8M4.5 3V2h3V3M3.5 3l.5 7h4l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    ${g.hours?`<div class="gc-hours">⏱${g.hours}h</div>`:''}
+    <div class="gc-body">
+      <div class="gc-name">${esc(g.name)}</div>
+      <div class="gc-meta">
+        <span class="gc-plat-ico">${platIcos(g)}</span>
+        <span class="gc-badge ${statusMap[g.status]||'gb-Backlog'}">${g.status}</span>
+      </div>
+    </div>
+  </div>`;
+}
+function plateholderHTML(name,ico){
+  return `<div class="gc-cover-placeholder"><div class="ph-ico">${ico||'🎮'}</div><div class="ph-txt">${name}</div></div>`;
+}
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+const BC=['#c8f135','#a78bfa','#60a5fa','#fb923c','#4ade80','#f472b6','#facc15','#f87171','#34d399','#e879f9'];
+
+function renderDash(){
+  updateQuickStats();
+  updateXPUI();
+  const playing=games.filter(g=>g.status==='Jogando');
+  document.getElementById('dash-playing').innerHTML=playing.length
+    ?playing.slice(0,6).map(gameCardHTML).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:8px 0">Nenhum jogo em andamento.</div>';
+
+  const finished=games.filter(g=>g.status==='Finalizado');
+  document.getElementById('dash-finished').innerHTML=finished.length
+    ?finished.slice(0,8).map(gameCardHTML).join('')
+    :'<div style="color:var(--text3);font-size:13px;padding:8px 0">Nenhum jogo finalizado ainda.</div>';
+
+  // Donut
+  const total=games.length;
+  const fin=finished.length,jog=playing.length,bkl=games.filter(g=>g.status==='Backlog').length,wish=games.filter(g=>g.status==='Desejos').length;
+  const sData=[{lbl:'Finalizado',n:fin,c:'var(--accent)'},{lbl:'Jogando',n:jog,c:'var(--purple)'},{lbl:'Backlog',n:bkl,c:'var(--blue)'},{lbl:'Desejos',n:wish,c:'var(--pink)'}].filter(d=>d.n>0);
+  if(sData.length){
+    const R=50,cx=62,cy=62,sw=13,circ=2*Math.PI*R;let off=0;
+    const arcs=sData.map(d=>{const dash=(d.n/total)*circ,gap=circ-dash;const a=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${d.c}" stroke-width="${sw}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-off}" transform="rotate(-90,${cx},${cy})" opacity=".9"/>`;off+=dash;return a;});
+    document.getElementById('d-donut').innerHTML=`<svg width="124" height="124" viewBox="0 0 124 124"><circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--surface3)" stroke-width="${sw}"/>${arcs.join('')}<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-family="Syne,sans-serif" font-size="18" font-weight="800">${total}</text></svg><div class="donut-legend">${sData.map(d=>`<div class="leg-row"><div class="leg-dot" style="background:${d.c}"></div>${d.lbl}<strong style="margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:${d.c}">${d.n}</strong></div>`).join('')}</div>`;
+  } else {
+    document.getElementById('d-donut').innerHTML='<span style="color:var(--text3);font-size:12px">Nenhum jogo ainda.</span>';
+  }
+
+  // Bars platforms
+  const pCount={};
+  games.forEach(g=>{const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);pids.forEach(pid=>{pCount[pid]=(pCount[pid]||0)+1;});});
+  const topP=Object.entries(pCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxP=topP[0]?.[1]||1;
+  document.getElementById('d-plats').innerHTML=topP.map(([pid,n],i)=>`<div class="bar-row"><span class="bar-lbl">${PM[pid]?.ico||''} ${PM[pid]?.lbl||pid}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxP*100}%;background:${BC[i%BC.length]}"></div></div><span class="bar-n">${n}</span></div>`).join('')||'<span style="color:var(--text3);font-size:12px">Sem dados.</span>';
+
+  // Bars genres
+  const gCount={};
+  games.filter(g=>g.genre).forEach(g=>{const k=g.genre.trim();gCount[k]=(gCount[k]||0)+1;});
+  const topG=Object.entries(gCount).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxG=topG[0]?.[1]||1;
+  document.getElementById('d-genres').innerHTML=topG.map(([genre,n],i)=>`<div class="bar-row"><span class="bar-lbl">${genre}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxG*100}%;background:${BC[(i+4)%BC.length]}"></div></div><span class="bar-n">${n}</span></div>`).join('')||'<span style="color:var(--text3);font-size:12px">Adicione gêneros.</span>';
+
+  // Recent
+  document.getElementById('d-recent').innerHTML=games.slice(0,5).map(g=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;background:var(--surface2);border-radius:var(--r-sm)"><span style="font-size:10px;padding:2px 7px;border-radius:100px;background:var(--surface3);color:var(--text2);white-space:nowrap">${platIcos(g)} ${PM[g.platformMain]?.lbl||g.platformMain||'—'}</span><span style="font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span><span class="gc-badge ${g.status==='Finalizado'?'gb-Finalizado':g.status==='Jogando'?'gb-Jogando':g.status==='Desejos'?'gb-Desejos':'gb-Backlog'}" style="font-size:10px">${g.status}</span>${g.score!==''?`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">${g.score}</span>`:''}</div>`).join('')||'<span style="color:var(--text3);font-size:12px">Nenhum jogo.</span>';
+}
+
+// ══════════════════════════════════════════
+// LIBRARY
+// ══════════════════════════════════════════
+function setLibFilter(type,val,btn){
+  curLibFilter[type]=val;
+  if(btn){
+    const parent=btn.closest('.filters-bar');
+    if(parent){parent.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+  }
+  renderLibrary();
+}
+function renderLibrary(){
+  const q=(document.getElementById('lib-search')?.value||'').toLowerCase();
+  let filtered=games;
+  if(curLibFilter.status&&curLibFilter.status!=='Todos')filtered=filtered.filter(g=>g.status===curLibFilter.status);
+  if(q)filtered=filtered.filter(g=>g.name.toLowerCase().includes(q)||(g.genre||'').toLowerCase().includes(q));
+  document.getElementById('lib-count').textContent=filtered.length>0?`(${filtered.length})`:'';
+  const grid=document.getElementById('lib-grid');
+  const empty=document.getElementById('lib-empty');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=filtered.map(gameCardHTML).join('');
+}
+
+// ══════════════════════════════════════════
+// BACKLOG PRIORITY
+// ══════════════════════════════════════════
+function renderBacklog(){
+  const bkl=games.filter(g=>g.status==='Backlog');
+  const short=bkl.filter(g=>parseFloat(g.avgtime||999)<15).sort((a,b)=>parseFloat(a.avgtime||0)-parseFloat(b.avgtime||0));
+  const med=bkl.filter(g=>{const h=parseFloat(g.avgtime||0);return h>=15&&h<=40;}).sort((a,b)=>parseFloat(a.avgtime)-parseFloat(b.avgtime));
+  const lng=bkl.filter(g=>!g.avgtime||parseFloat(g.avgtime)>40).sort((a,b)=>parseFloat(b.avgtime||0)-parseFloat(a.avgtime||0));
+
+  document.getElementById('bkl-total').textContent=bkl.length;
+  document.getElementById('bkl-short').textContent=short.length;
+  document.getElementById('bkl-med').textContent=med.length;
+  document.getElementById('bkl-long').textContent=lng.length;
+
+  ['short','med','long'].forEach((key,idx)=>{
+    const list=[short,med,lng][idx];
+    const el=document.getElementById(`bkl-list-${key}`);
+    if(!list.length){el.innerHTML=`<div style="color:var(--text3);font-size:12px;padding:8px 4px">Nenhum jogo nesta faixa.</div>`;return;}
+    el.innerHTML=list.map((g,i)=>`
+      <div class="prio-card" onclick="openDetail(${g.id})">
+        <div class="prio-rank">#${i+1}</div>
+        ${g.cover?`<img class="prio-cover" src="${esc(g.cover)}" alt="" onerror="this.style.display='none'">`:`<div class="prio-cover">${platIcos(g)||'🎮'}</div>`}
+        <div class="prio-info">
+          <div class="prio-name">${esc(g.name)}</div>
+          <div class="prio-meta">
+            <span>${platIcos(g)} ${PM[g.platformMain]?.lbl||g.platformMain||'—'}</span>
+            ${g.genre?`<span class="prio-badge">${esc(g.genre)}</span>`:''}
+            ${g.diff?`<span class="prio-badge">${esc(g.diff)}</span>`:''}
+            ${g.avgtime?`<span class="prio-time">~${g.avgtime}h</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button class="gc-act-btn" onclick="event.stopPropagation();editGame(${g.id})" title="Editar" style="width:28px;height:28px">
+            <svg width="11" height="11" fill="none" viewBox="0 0 12 12"><path d="M8.5 1.5l2 2-6 6H2.5V7.5L8.5 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  });
+}
+
+// ══════════════════════════════════════════
+// RECOMMENDER
+// ══════════════════════════════════════════
+function buildRecSelect(){
+  const sel=document.getElementById('rec-plat');
+  if(sel.options.length>1)return;
+  const used=new Set();
+  games.forEach(g=>{if(g.platformMain)used.add(g.platformMain);});
+  ALL_PLATS.filter(p=>used.has(p.id)).forEach(p=>{
+    const o=document.createElement('option');o.value=p.id;o.textContent=p.lbl;sel.appendChild(o);
+  });
+}
+function recommend(){
+  const time=parseFloat(document.getElementById('rec-time').value)||999;
+  const platPref=document.getElementById('rec-plat').value;
+  const genrePref=document.getElementById('rec-genre').value.toLowerCase().trim();
+  const diffPref=document.getElementById('rec-diff').value;
+  const pool=games.filter(g=>g.status==='Backlog');
+  if(!pool.length){document.getElementById('rec-result').innerHTML='<div class="rec-empty">Seu backlog está vazio! Adicione jogos com status Backlog.</div>';return;}
+
+  let scored=pool.map(g=>{
+    let s=0;
+    if(g.avgtime&&parseFloat(g.avgtime)<=time)s+=30;
+    else if(!g.avgtime)s+=10;
+    if(platPref&&g.platformMain===platPref)s+=25;
+    if(genrePref&&(g.genre||'').toLowerCase().includes(genrePref))s+=20;
+    if(diffPref&&g.diff===diffPref)s+=15;
+    return{g,s};
+  }).sort((a,b)=>b.s-a.s);
+
+  const best=scored[0]?.g;
+  if(!best){document.getElementById('rec-result').innerHTML='<div class="rec-empty">Nenhum jogo do backlog compatível com os critérios.</div>';return;}
+
+  const reasons=[];
+  if(best.avgtime&&parseFloat(best.avgtime)<=time)reasons.push(`cabe no seu tempo disponível (~${best.avgtime}h)`);
+  if(platPref&&best.platformMain===platPref)reasons.push(`está disponível em ${PM[platPref]?.lbl||platPref}`);
+  if(genrePref&&(best.genre||'').toLowerCase().includes(genrePref))reasons.push(`é do gênero ${best.genre}`);
+  if(diffPref&&best.diff===diffPref)reasons.push(`tem dificuldade ${best.diff}`);
+  if(!reasons.length)reasons.push('melhor opção disponível no seu backlog');
+
+  document.getElementById('rec-result').innerHTML=`
+    <div class="rec-result">
+      ${best.cover?`<img class="rec-result-cover" src="${esc(best.cover)}" alt="" onerror="this.outerHTML='<div class=rec-result-cover>${platIcos(best)||'🎮'}</div>'">`:`<div class="rec-result-cover" style="font-size:28px;display:grid;place-items:center">${platIcos(best)||'🎮'}</div>`}
+      <div class="rec-result-info">
+        <div class="rec-result-name">${esc(best.name)}</div>
+        <div class="rec-result-meta">
+          <span class="chip">${platIcos(best)} ${PM[best.platformMain]?.lbl||best.platformMain||'—'}</span>
+          ${best.genre?`<span class="chip">${esc(best.genre)}</span>`:''}
+          ${best.diff?`<span class="chip">${esc(best.diff)}</span>`:''}
+          ${best.avgtime?`<span class="chip" style="color:var(--orange)">~${best.avgtime}h</span>`:''}
+        </div>
+        <div class="rec-why">Recomendado porque ${reasons.join(', ')}.</div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="quickStatus(${best.id},'Jogando')">▶ Começar a jogar</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDetail(${best.id})">Ver detalhes</button>
+        </div>
+      </div>
+    </div>`;
+}
+function quickStatus(id,status){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  g.status=status;if(status==='Jogando'&&!g.dateStart)g.dateStart=new Date().toISOString().split('T')[0];
+  persist();buildSb();updateQuickStats();updateXPUI();
+  toast(`▶ ${g.name} marcado como ${status}!`);
+  recommend();
+}
+
+// ══════════════════════════════════════════
+// ACHIEVEMENTS
+// ══════════════════════════════════════════
+function renderAchievements(){
+  const xp=calcXP();const lvl=getLevel(xp);const pct=getLevelProgress(xp);const rank=getRank(lvl);
+  const next=lvl*XP_PER_LEVEL;
+  document.getElementById('xp-panel-main').innerHTML=`
+    <div class="xp-top">
+      <div class="xp-level-badge"><div class="xp-level-num">${lvl}</div></div>
+      <div class="xp-info">
+        <div class="xp-rank">${rank}</div>
+        <div class="xp-pts-row">${xp} XP total · Próximo nível: ${next} XP</div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-lbl"><span>Nível ${lvl}</span><span>Nível ${lvl+1}</span></div>
+          <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:4px">
+      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center"><div style="font-size:11px;color:var(--text3)">Jogos Finalizados</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent)">${games.filter(g=>g.status==='Finalizado').length}</div></div>
+      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center"><div style="font-size:11px;color:var(--text3)">Horas Registradas</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--orange)">${Math.round(games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0))}</div></div>
+      <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center"><div style="font-size:11px;color:var(--text3)">Plataformas</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--purple)">${new Set(games.filter(g=>g.platformMain).map(g=>g.platformMain)).size}</div></div>
+    </div>`;
+
+  const unlocked=getUnlocked();
+  document.getElementById('ach-grid').innerHTML=ACHIEVEMENTS_DEF.map(a=>`
+    <div class="ach ${unlocked.includes(a.id)?'unlocked':'locked'}">
+      <div class="ach-ico">${a.ico}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      <div class="ach-xp">+${a.xp} XP</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════
+// PLATFORM PAGE
+// ══════════════════════════════════════════
+function renderPlatPage(pid){
+  const p=PM[pid]||{lbl:pid,ico:'🎮'};
+  document.getElementById('pt-title').textContent=p.lbl;
+  document.getElementById('pt-icon').textContent=p.ico;
+  document.getElementById('pt-name').textContent=p.lbl;
+
+  const pg=games.filter(g=>{
+    const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);
+    return pids.includes(pid);
+  });
+  const fin=pg.filter(g=>g.status==='Finalizado').length;
+  const jog=pg.filter(g=>g.status==='Jogando').length;
+  const bkl=pg.filter(g=>g.status==='Backlog').length;
+  const rated=pg.filter(g=>g.score!=='');
+  const avg=rated.length?(rated.reduce((s,g)=>s+parseFloat(g.score),0)/rated.length).toFixed(1):null;
+  const hrs=pg.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
+
+  document.getElementById('pt-chips').innerHTML=`
+    <span class="chip">${pg.length} jogos</span>
+    <span class="chip" style="color:var(--accent)">${fin} finalizados</span>
+    <span class="chip" style="color:var(--purple)">${jog} jogando</span>
+    <span class="chip">${bkl} backlog</span>
+    ${avg?`<span class="chip" style="color:var(--yellow)">★ ${avg}</span>`:''}
+    ${hrs>0?`<span class="chip" style="color:var(--orange)">⏱ ${Math.round(hrs)}h</span>`:''}
+  `;
+  renderPlatGrid(pid,pg);
+}
+function setPlatFilter(f,btn){
+  curPlatFilter=f;
+  document.querySelectorAll('#pg-plat .filters-bar .fbtn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const allPg=games.filter(g=>{const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);return pids.includes(curPlat);});
+  renderPlatGrid(curPlat,allPg);
+}
+function renderPlatGrid(pid,allPg){
+  let filtered=allPg;
+  if(curPlatFilter!=='Todos')filtered=filtered.filter(g=>g.status===curPlatFilter);
+  const grid=document.getElementById('pt-grid');
+  const empty=document.getElementById('pt-empty');
+  if(!filtered.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  grid.innerHTML=filtered.map(gameCardHTML).join('');
+}
+
+// ══════════════════════════════════════════
+// DETAIL MODAL
+// ══════════════════════════════════════════
+function openDetail(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  const cover=g.cover?`<img class="dmodal-cover" src="${esc(g.cover)}" alt="" onerror="this.outerHTML='<div class=dmodal-cover-ph>${platIcos(g)||'🎮'}</div>'">`:`<div class="dmodal-cover-ph">${platIcos(g)||'🎮'}</div>`;
+  const statusCls={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos'};
+  document.getElementById('dmodal-content').innerHTML=`
+    ${cover}
+    <div class="dmodal-body">
+      <div class="dmodal-top">
+        <div class="dmodal-name">${esc(g.name)}</div>
+        <button class="dmodal-close" onclick="closeDetail()"><svg width="9" height="9" fill="none" viewBox="0 0 9 9"><path d="M1 1l7 7M8 1L1 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+      </div>
+      <div class="dmodal-chips">
+        <span class="gc-badge ${statusCls[g.status]||'gb-Backlog'}">${g.status}</span>
+        ${g.genre?`<span class="chip">${esc(g.genre)}</span>`:''}
+        ${g.diff?`<span class="chip">${esc(g.diff)}</span>`:''}
+        ${g.score!==''?`<span class="chip" style="color:var(--accent)">★ ${g.score}/10</span>`:''}
+        ${g.year?`<span class="chip">${g.year}</span>`:''}
+      </div>
+      <div class="dmodal-grid">
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Plataforma Principal</div><div class="dmodal-field-val">${PM[g.platformMain]?.ico||''} ${PM[g.platformMain]?.lbl||g.platformMain||'—'}</div></div>
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Plataformas Disponíveis</div><div class="dmodal-field-val">${(g.platforms||[]).map(pid=>PM[pid]?.ico+' '+PM[pid]?.lbl||pid).join(', ')||'—'}</div></div>
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Início</div><div class="dmodal-field-val">${fmtDate(g.dateStart)||'—'}</div></div>
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Finalização</div><div class="dmodal-field-val">${fmtDate(g.dateEnd)||'—'}</div></div>
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Tempo Jogado</div><div class="dmodal-field-val" style="color:var(--orange)">${g.hours?g.hours+'h':'—'}</div></div>
+        <div class="dmodal-field"><div class="dmodal-field-lbl">Tempo Estimado</div><div class="dmodal-field-val">${g.avgtime?'~'+g.avgtime+'h':'—'}</div></div>
+      </div>
+      ${g.obs?`<div class="dmodal-obs">"${esc(g.obs)}"</div>`:''}
+      <div class="dmodal-actions">
+        <button class="btn btn-primary btn-sm" onclick="closeDetail();editGame(${g.id})">✏️ Editar</button>
+        ${g.status==='Backlog'?`<button class="btn btn-ghost btn-sm" onclick="closeDetail();quickStatus(${g.id},'Jogando')">▶ Começar</button>`:''}
+        ${g.status==='Jogando'?`<button class="btn btn-ghost btn-sm" onclick="closeDetail();quickStatus(${g.id},'Finalizado')">✓ Finalizar</button>`:''}
+        <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="closeDetail();deleteGame(${g.id})">🗑️</button>
+      </div>
+    </div>`;
+  document.getElementById('doverlay').classList.add('open');
+}
+function closeDetail(){document.getElementById('doverlay').classList.remove('open');}
+document.getElementById('doverlay').addEventListener('click',e=>{if(e.target===document.getElementById('doverlay'))closeDetail();});
+
+// ══════════════════════════════════════════
+// MODAL — FORM
+// ══════════════════════════════════════════
+function buildPlatChecks(selectedIds=[]){
+  const container=document.getElementById('plat-checks');
+  let html='';
+  ERAS.forEach(e=>{
+    html+=`<span class="plat-era-hdr">${e.era}</span>`;
+    e.plats.forEach(p=>{
+      const sel=selectedIds.includes(p.id)?'1':'0';
+      html+=`<span class="pci" data-id="${p.id}" data-sel="${sel}" tabindex="0" role="checkbox" aria-checked="${sel==='1'}">${p.ico} ${p.lbl}</span>`;
+    });
+  });
+  container.innerHTML=html;
+  // Single delegated listener — replaces the buggy per-element onclick
+  container.addEventListener('click',function platCheckClick(e){
+    const item=e.target.closest('.pci');
+    if(!item)return;
+    const nowSel=item.dataset.sel==='1'?'0':'1';
+    item.dataset.sel=nowSel;
+    item.setAttribute('aria-checked',nowSel==='1');
+    rebuildMainSelect(getCheckedPlats());
+  });
+  // Keyboard support
+  container.addEventListener('keydown',function platCheckKey(e){
+    if(e.key===' '||e.key==='Enter'){
+      const item=e.target.closest('.pci');
+      if(!item)return;
+      e.preventDefault();
+      const nowSel=item.dataset.sel==='1'?'0':'1';
+      item.dataset.sel=nowSel;
+      item.setAttribute('aria-checked',nowSel==='1');
+      rebuildMainSelect(getCheckedPlats());
+    }
+  });
+  rebuildMainSelect(selectedIds);
+}
+function getCheckedPlats(){
+  return Array.from(document.querySelectorAll('#plat-checks .pci[data-sel="1"]')).map(el=>el.dataset.id);
+}
+function rebuildMainSelect(checkedIds){
+  const sel=document.getElementById('f-plat-main');
+  const prev=sel.value;
+  sel.innerHTML='<option value="">Selecione…</option>';
+  const list=checkedIds.length?checkedIds.map(id=>PM[id]).filter(Boolean):ALL_PLATS;
+  list.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.id;
+    o.textContent=p.ico+' '+p.lbl;
+    sel.appendChild(o);
+  });
+  if(checkedIds.includes(prev))sel.value=prev;
+  else if(checkedIds.length===1)sel.value=checkedIds[0];
+}
+
+function openModal(presetPlat){
+  editId=null;
+  document.getElementById('m-title').textContent='+ Adicionar Jogo';
+  document.getElementById('btn-save').textContent='Salvar';
+  clearForm();
+  const presetPid=presetPlat||curPlat||null;
+  buildPlatChecks(presetPid?[presetPid]:[]);
+  if(presetPid){
+    const mainSel=document.getElementById('f-plat-main');
+    if(Array.from(mainSel.options).some(o=>o.value===presetPid))mainSel.value=presetPid;
+  }
+  document.getElementById('moverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-name').focus(),80);
+}
+function closeModal(){document.getElementById('moverlay').classList.remove('open');editId=null;}
+document.getElementById('moverlay').addEventListener('click',e=>{if(e.target===document.getElementById('moverlay'))closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDetail();}});
+
+function clearForm(){
+  ['f-name','f-cover','f-genre','f-year','f-score','f-datestart','f-dateend','f-hours','f-avgtime','f-obs','f-rawg-id','f-rawg-release','f-rawg-genres'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('f-status').value='Backlog';
+  document.getElementById('f-diff').value='';
+}
+
+// ══════════════════════════════════════════
+// CRUD
+// ══════════════════════════════════════════
+function saveGame(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){toast('⚠️ Nome é obrigatório.');return;}
+  const platforms=getCheckedPlats();
+  const platformMain=document.getElementById('f-plat-main').value||platforms[0]||'Outro';
+  const g={
+    id:editId||Date.now(),
+    name,
+    cover:document.getElementById('f-cover').value.trim(),
+    platforms,platformMain,
+    status:document.getElementById('f-status').value,
+    genre:document.getElementById('f-genre').value.trim(),
+    year:document.getElementById('f-year').value.trim(),
+    score:document.getElementById('f-score').value.trim(),
+    diff:document.getElementById('f-diff').value,
+    dateStart:document.getElementById('f-datestart').value,
+    dateEnd:document.getElementById('f-dateend').value,
+    hours:document.getElementById('f-hours').value.trim(),
+    avgtime:document.getElementById('f-avgtime').value.trim(),
+    obs:document.getElementById('f-obs').value.trim(),
+    // RAWG future fields
+    rawgId:document.getElementById('f-rawg-id').value,
+    rawgRelease:document.getElementById('f-rawg-release').value,
+    rawgGenres:document.getElementById('f-rawg-genres').value,
+  };
+  const prevUnlocked=getUnlocked();
+  if(editId){
+    const i=games.findIndex(x=>x.id===editId);if(i>-1)games[i]=g;
+    toast('✏️ Jogo atualizado!');
+  } else {
+    games.unshift(g);
+    toast('🎮 Jogo adicionado!');
+  }
+  persist();closeModal();buildSb();updateQuickStats();updateXPUI();
+  // Check new achievements
+  const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
+  if(newUnlocked.length){
+    const a=ACHIEVEMENTS_DEF.find(x=>x.id===newUnlocked[0]);
+    if(a)setTimeout(()=>toast(`🏆 Conquista desbloqueada: ${a.name}!`),800);
+  }
+  refresh();
+}
+function refresh(){
+  const active=document.querySelector('.page.active');
+  if(!active)return;
+  const id=active.id;
+  if(id==='pg-dash')renderDash();
+  else if(id==='pg-library')renderLibrary();
+  else if(id==='pg-backlog')renderBacklog();
+  else if(id==='pg-ach')renderAchievements();
+  else if(id==='pg-plat'&&curPlat)renderPlatPage(curPlat);
+}
+
+function editGame(id){
+  const g=games.find(x=>x.id===id);if(!g)return;
+  editId=g.id;
+  document.getElementById('f-name').value=g.name;
+  document.getElementById('f-cover').value=g.cover||'';
+  document.getElementById('f-status').value=g.status;
+  document.getElementById('f-genre').value=g.genre||'';
+  document.getElementById('f-year').value=g.year||'';
+  document.getElementById('f-score').value=g.score||'';
+  document.getElementById('f-diff').value=g.diff||'';
+  document.getElementById('f-datestart').value=g.dateStart||'';
+  document.getElementById('f-dateend').value=g.dateEnd||'';
+  document.getElementById('f-hours').value=g.hours||'';
+  document.getElementById('f-avgtime').value=g.avgtime||'';
+  document.getElementById('f-obs').value=g.obs||'';
+  document.getElementById('f-rawg-id').value=g.rawgId||'';
+  document.getElementById('f-rawg-release').value=g.rawgRelease||'';
+  document.getElementById('f-rawg-genres').value=g.rawgGenres||'';
+  const platforms=(Array.isArray(g.platforms)&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);
+  buildPlatChecks(platforms);
+  // Set synchronously after buildPlatChecks populates the select
+  const mainSel=document.getElementById('f-plat-main');
+  if(g.platformMain&&Array.from(mainSel.options).some(o=>o.value===g.platformMain)){
+    mainSel.value=g.platformMain;
+  } else if(platforms.length){
+    mainSel.value=platforms[0];
+  }
+  document.getElementById('m-title').textContent='✏️ Editar Jogo';
+  document.getElementById('btn-save').textContent='Atualizar';
+  document.getElementById('moverlay').classList.add('open');
+}
+
+function deleteGame(id){
+  if(!confirm('Remover este jogo?'))return;
+  games=games.filter(g=>g.id!==id);
+  persist();buildSb();updateQuickStats();updateXPUI();
+  toast('🗑️ Removido.');refresh();
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmtDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}/${m}/${y}`;}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function initApp(){
+  buildSb();
+  updateQuickStats();
+  updateXPUI();
+  renderDash();
+}
+
+// Try to load from artifact window.storage asynchronously
+// (artifact API is async; localStorage is already loaded synchronously above)
+if(hasArtifactStorage()){
+  window.storage.get(KEY).then(result=>{
+    if(result&&result.value){
+      try{
+        const remote=JSON.parse(result.value);
+        if(Array.isArray(remote)&&remote.length>games.length){
+          // Remote has more data — use it and sync back to localStorage
+          games=remote.map(g=>{
+            if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
+            if(!Array.isArray(g.platforms)||!g.platforms.length){g.platforms=g.platformMain?[g.platformMain]:[];}
+            g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
+            if(g.status==='Lista de Desejos'){g.status='Desejos';}
+            return g;
+          });
+          saveData(games);
+          initApp(); // re-render with freshly loaded data
+        }
+      }catch(e){console.warn('artifact storage parse error:',e);}
+    }
+  }).catch(e=>console.warn('artifact storage get failed:',e));
+}
+
+initApp();
+</script>
+</body>
+</html>
