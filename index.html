@@ -18,12 +18,12 @@
 }
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden}
-
+ 
 /* ═══ SCROLLBAR ═══ */
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-
+ 
 /* ═══ SIDEBAR ═══ */
 #sidebar{width:var(--sw);min-width:var(--sw);background:var(--sidebar);border-right:1px solid var(--border);height:100vh;position:sticky;top:0;display:flex;flex-direction:column;transition:width .2s ease,min-width .2s ease;overflow:hidden;z-index:100;flex-shrink:0}
 #sidebar.col{width:var(--swc);min-width:var(--swc)}
@@ -46,7 +46,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sb-cnt{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);background:var(--surface3);padding:1px 6px;border-radius:100px;flex-shrink:0}
 .sb-plats{overflow-y:auto;flex:1;padding:0 0 12px}
 .sb-era{font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);padding:8px 16px 3px;font-family:'DM Mono',monospace;display:block}
-
+ 
 /* XP bar in sidebar */
 .sb-xp{padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0}
 .sb-xp-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;white-space:nowrap;overflow:hidden}
@@ -57,18 +57,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .sb-xp-name{font-size:10px;color:var(--text2);margin-bottom:4px}
 #sidebar.col .sb-xp{padding:8px}
 #sidebar.col .sb-xp-hdr,#sidebar.col .sb-xp-name{display:none}
-
+ 
 /* ═══ MAIN ═══ */
 #main{flex:1;overflow-y:auto;overflow-x:hidden;min-width:0;height:100vh}
 .page{display:none;animation:fu .2s ease}
 .page.active{display:block}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
+ 
 /* ═══ TOPBAR ═══ */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,12,.94);backdrop-filter:blur(16px);z-index:50;gap:10px;flex-wrap:wrap}
 .topbar-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.5px}
 .topbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-
+ 
 /* ═══ BUTTONS ═══ */
 .btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.3px;padding:8px 16px;border-radius:var(--r-sm);border:none;cursor:pointer;transition:all var(--tr);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:var(--accent);color:#0a0a0c}
@@ -76,7 +76,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}
 .btn-ghost:hover{color:var(--text);border-color:var(--text2)}
 .btn-sm{padding:5px 12px;font-size:11px}
-
+ 
 /* ═══ QUICK STATS BAR ═══ */
 .qstats{display:grid;gap:0;border-bottom:1px solid var(--border);background:var(--sidebar);flex-shrink:0}
 .qstats-7{grid-template-columns:repeat(7,1fr)}
@@ -86,7 +86,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qstat:hover{background:var(--surface2)}
 .qsv{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;letter-spacing:-1px;line-height:1}
 .qsl{font-size:8px;letter-spacing:.7px;text-transform:uppercase;color:var(--text3);margin-top:2px;white-space:nowrap}
-
+ 
 /* ═══ SECTION ROWS (Netflix style) ═══ */
 .section-wrap{padding:0 24px 32px}
 .section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-top:28px}
@@ -94,11 +94,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .section-ttl span{color:var(--text3);font-size:12px;font-weight:400;margin-left:8px}
 .see-all{font-size:11px;color:var(--accent);cursor:pointer;font-weight:600;letter-spacing:.3px;transition:opacity var(--tr)}
 .see-all:hover{opacity:.7}
-
+ 
 /* ═══ NETFLIX GRID ═══ */
 .nf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
 .nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
-
+ 
 /* ═══ GAME CARD ═══ */
 .gc{position:relative;border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .22s ease,box-shadow .22s ease;background:var(--surface);border:1px solid var(--border);group:1}
 .gc:hover{transform:scale(1.04);box-shadow:0 12px 40px rgba(0,0,0,.7);z-index:2;border-color:var(--border2)}
@@ -123,7 +123,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .gc-act-btn:hover{color:var(--text);background:rgba(30,30,40,.95)}
 .gc-act-btn.del:hover{color:var(--red)}
 .gc-hours{position:absolute;bottom:8px;right:8px;font-size:9px;color:var(--orange);font-family:'DM Mono',monospace;opacity:.8}
-
+ 
 /* ═══ DASHBOARD CHARTS ═══ */
 .dash-wrap{padding:0 24px 32px}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:4px}
@@ -139,7 +139,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .donut-legend{display:flex;flex-direction:column;gap:8px}
 .leg-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2)}
 .leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-
+ 
 /* ═══ GAMIFICATION ═══ */
 .xp-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
 .xp-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),transparent)}
@@ -161,7 +161,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .ach-name{font-size:10px;font-weight:600;color:var(--text);letter-spacing:.3px}
 .ach-desc{font-size:9px;color:var(--text3)}
 .ach-xp{font-family:'DM Mono',monospace;font-size:9px;color:var(--accent);margin-top:2px}
-
+ 
 /* ═══ BACKLOG PRIORITY ═══ */
 .priority-section{display:flex;flex-direction:column;gap:8px}
 .prio-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:14px;transition:all var(--tr);cursor:pointer}
@@ -173,7 +173,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .prio-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--text2)}
 .prio-time{font-family:'DM Mono',monospace;font-size:10px;color:var(--orange)}
 .prio-badge{font-size:9px;padding:1px 6px;border-radius:100px;background:var(--surface3);color:var(--text2)}
-
+ 
 /* ═══ RECOMMENDER ═══ */
 .rec-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:18px}
 .rec-form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
@@ -184,7 +184,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .rec-result-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
 .rec-why{font-size:11px;color:var(--text2);font-style:italic}
 .rec-empty{text-align:center;padding:32px;color:var(--text3);font-size:13px}
-
+ 
 /* ═══ FILTERS BAR ═══ */
 .filters-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--sidebar)}
 .fbtn{font-size:11px;font-weight:500;padding:5px 13px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all var(--tr);font-family:'DM Sans',sans-serif}
@@ -194,7 +194,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .search-input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:5px 11px;border-radius:100px;outline:none;width:180px;transition:border-color var(--tr)}
 .search-input:focus{border-color:var(--accent)}
 .search-input::placeholder{color:var(--text3)}
-
+ 
 /* ═══ PLATFORM PAGE ═══ */
 .plat-wrap{padding:22px 24px}
 .plat-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
@@ -202,7 +202,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .plat-name-lg{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.7px}
 .chips-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .chip{font-size:11px;padding:2px 10px;border-radius:100px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
-
+ 
 /* ═══ MODAL ═══ */
 #moverlay{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;place-items:center;z-index:200;backdrop-filter:blur(6px);padding:16px}
 #moverlay.open{display:grid}
@@ -230,7 +230,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .pci{display:inline-flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;padding:4px 9px;border-radius:100px;border:1px solid var(--border2);background:transparent;transition:border-color var(--tr),background var(--tr),color var(--tr);color:var(--text2);user-select:none;white-space:nowrap}
 .pci:hover{border-color:var(--text2);color:var(--text)}
 .pci[data-sel="1"]{background:rgba(200,241,53,.12);border-color:var(--accent);color:var(--accent)}
-
+ 
 /* ═══ DETAIL MODAL ═══ */
 #doverlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;place-items:center;z-index:210;backdrop-filter:blur(8px);padding:16px}
 #doverlay.open{display:grid}
@@ -249,24 +249,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .dmodal-field-val{font-size:13px;color:var(--text)}
 .dmodal-obs{background:var(--surface2);border-radius:var(--r-sm);padding:12px;font-size:13px;color:var(--text2);font-style:italic;line-height:1.6;margin-bottom:14px}
 .dmodal-actions{display:flex;gap:8px}
-
+ 
 /* ═══ EMPTY ═══ */
 .empty{text-align:center;padding:60px 20px;color:var(--text3)}
 .empty-ico{font-size:40px;margin-bottom:12px;opacity:.3}
 .empty h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text2);margin-bottom:5px}
 .empty p{font-size:12px}
-
+ 
 /* ═══ TOAST ═══ */
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(55px);background:var(--surface3);border:1px solid var(--border2);color:var(--text);font-size:12px;padding:9px 18px;border-radius:100px;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .28s cubic-bezier(.34,1.3,.64,1),opacity .28s;opacity:0;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-
+ 
 /* ═══ MOBILE ═══ */
 .mob-bar{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--sidebar);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:60}
 .mob-mbtn{width:30px;height:30px;border-radius:5px;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text2);display:grid;place-items:center}
 .mob-logo{font-family:'Syne',sans-serif;font-size:14px;font-weight:800}
 .mob-logo span{color:var(--accent)}
 #sboverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;backdrop-filter:blur(2px)}
-
+ 
 @media(max-width:760px){
   #sidebar{position:fixed;left:0;top:0;z-index:95;transform:translateX(-100%);transition:transform .25s ease;height:100vh}
   #sidebar.mob-open{transform:translateX(0)}
@@ -287,7 +287,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </style>
 </head>
 <body>
-
+ 
 <div class="mob-bar">
   <button class="mob-mbtn" onclick="toggleMobSb()">
     <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -295,7 +295,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <span class="mob-logo">Game<span>Tracker</span></span>
 </div>
 <div id="sboverlay" onclick="toggleMobSb()"></div>
-
+ 
 <!-- ═══ SIDEBAR ═══ -->
 <nav id="sidebar">
   <div class="sb-logo">
@@ -347,10 +347,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="sb-xp-bar"><div class="sb-xp-fill" id="sb-xp-fill" style="width:0%"></div></div>
   </div>
 </nav>
-
+ 
 <!-- ═══ MAIN ═══ -->
 <div id="main">
-
+ 
   <!-- DASHBOARD -->
   <div id="pg-dash" class="page active">
     <div class="topbar">
@@ -385,7 +385,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
   </div>
-
+ 
   <!-- LIBRARY -->
   <div id="pg-library" class="page">
     <div class="topbar">
@@ -410,7 +410,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
   </div>
-
+ 
   <!-- BACKLOG PRIORITY -->
   <div id="pg-backlog" class="page">
     <div class="topbar">
@@ -434,7 +434,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="priority-section" id="bkl-list-long"></div>
     </div>
   </div>
-
+ 
   <!-- RECOMMENDER -->
   <div id="pg-rec" class="page">
     <div class="topbar"><div class="topbar-title">Qual Jogar Agora?</div></div>
@@ -460,7 +460,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div id="rec-result"></div>
     </div>
   </div>
-
+ 
   <!-- ACHIEVEMENTS -->
   <div id="pg-ach" class="page">
     <div class="topbar"><div class="topbar-title">Conquistas & XP</div></div>
@@ -470,7 +470,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="achievements-grid" id="ach-grid"></div>
     </div>
   </div>
-
+ 
   <!-- PLATFORM PAGE -->
   <div id="pg-plat" class="page">
     <div class="topbar">
@@ -498,9 +498,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       </div>
     </div>
   </div>
-
+ 
 </div><!-- /main -->
-
+ 
 <!-- ═══ ADD/EDIT MODAL ═══ -->
 <div id="moverlay">
   <div class="modal">
@@ -557,16 +557,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
+ 
 <!-- ═══ DETAIL MODAL ═══ -->
 <div id="doverlay">
   <div class="dmodal">
     <div id="dmodal-content"></div>
   </div>
 </div>
-
+ 
 <div id="toast"></div>
-
+ 
 <!-- BACKUP IMPORT CONFIRM MODAL -->
 <div id="bk-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);place-items:center;z-index:300;backdrop-filter:blur(6px);padding:16px">
   <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:420px;overflow:hidden;animation:mi .2s cubic-bezier(.34,1.2,.64,1);position:relative">
@@ -581,7 +581,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 </div>
-
+ 
 <script>
 // ══════════════════════════════════════════
 // PLATFORMS
@@ -640,7 +640,7 @@ const ERAS = [
 const PM={};
 ERAS.forEach(e=>e.plats.forEach(p=>{PM[p.id]=p;}));
 const ALL_PLATS=ERAS.flatMap(e=>e.plats);
-
+ 
 // ══════════════════════════════════════════
 // GAMIFICATION CONFIG
 // ══════════════════════════════════════════
@@ -656,12 +656,12 @@ const ACHIEVEMENTS_DEF=[
   {id:'five_plats',ico:'🎯',name:'Multiplataforma',desc:'Jogue em 5 plataformas diferentes',xp:30,check:g=>new Set(g.filter(x=>x.platformMain).map(x=>x.platformMain)).size>=5},
   {id:'wishlist_10',ico:'💭',name:'Sonhador',desc:'10 jogos na lista de desejos',xp:20,check:g=>g.filter(x=>x.status==='Desejos').length>=10},
 ];
-
+ 
 // ══════════════════════════════════════════
 // STORAGE LAYER — works in artifact + offline
 // ══════════════════════════════════════════
 const KEY='gt_v4';
-
+ 
 // Check if window.storage (artifact API) is available
 function hasArtifactStorage(){
   return typeof window.storage!=='undefined'&&window.storage!==null&&typeof window.storage.set==='function';
@@ -671,10 +671,10 @@ function hasLocalStorage(){
   try{localStorage.setItem('__gt_test__','1');localStorage.removeItem('__gt_test__');return true;}
   catch(e){return false;}
 }
-
+ 
 // In-memory fallback for sandboxed environments with no storage
 let _memStore={};
-
+ 
 function saveData(data){
   const json=JSON.stringify(data);
   if(hasArtifactStorage()){
@@ -688,7 +688,7 @@ function saveData(data){
   }
   _memStore[KEY]=json; // always keep in memory as last-resort
 }
-
+ 
 function loadData(){
   // 1. Try localStorage first (sync, reliable)
   if(hasLocalStorage()){
@@ -709,12 +709,12 @@ function loadData(){
   }
   return [];
 }
-
+ 
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 let games=loadData();
-
+ 
 // Migrate old data
 games=games.map(g=>{
   if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
@@ -727,15 +727,15 @@ games=games.map(g=>{
   return g;
 });
 saveData(games);
-
+ 
 let editId=null;
 let curPlat=null;
 let curPlatFilter='Todos';
 let curLibFilter={status:'Todos'};
 let sbCollapsed=false;
-
+ 
 function persist(){saveData(games);}
-
+ 
 // ══════════════════════════════════════════
 // XP & GAMIFICATION
 // ══════════════════════════════════════════
@@ -757,7 +757,7 @@ function getLevel(xp){return Math.floor(xp/XP_PER_LEVEL)+1;}
 function getLevelProgress(xp){return((xp%XP_PER_LEVEL)/XP_PER_LEVEL)*100;}
 function getRank(lvl){return RANKS[Math.min(lvl-1,RANKS.length-1)];}
 function getUnlocked(){return ACHIEVEMENTS_DEF.filter(a=>a.check(games)).map(a=>a.id);}
-
+ 
 function updateXPUI(){
   const xp=calcXP();
   const lvl=getLevel(xp);
@@ -769,7 +769,7 @@ function updateXPUI(){
   document.getElementById('sb-xp-pts').textContent=`${xp}/${next} XP`;
   document.getElementById('sb-xp-fill').style.width=pct+'%';
 }
-
+ 
 // ══════════════════════════════════════════
 // QUICK STATS
 // ══════════════════════════════════════════
@@ -782,7 +782,7 @@ function updateQuickStats(){
   const unique=new Set(games.map(g=>g.name.toLowerCase().trim())).size;
   const totalH=games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
   const backlogH=games.filter(g=>g.status==='Backlog'&&g.avgtime).reduce((s,g)=>s+parseFloat(g.avgtime),0);
-
+ 
   document.getElementById('qs-total').textContent=unique;
   document.getElementById('qs-fin').textContent=fin;
   document.getElementById('qs-jog').textContent=jog;
@@ -793,7 +793,7 @@ function updateQuickStats(){
   document.getElementById('sb-total').textContent=unique;
   document.getElementById('sb-bkl').textContent=bkl;
 }
-
+ 
 // ══════════════════════════════════════════
 // SIDEBAR BUILD
 // ══════════════════════════════════════════
@@ -819,7 +819,7 @@ function buildSb(){
   });
   container.innerHTML=html;
 }
-
+ 
 // ══════════════════════════════════════════
 // SIDEBAR TOGGLE
 // ══════════════════════════════════════════
@@ -837,7 +837,7 @@ function toggleMobSb(){
   const open=sb.classList.toggle('mob-open');
   ov.style.display=open?'block':'none';
 }
-
+ 
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
@@ -846,7 +846,7 @@ function navigate(page,arg){
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-
+ 
   if(page==='dashboard'){
     curPlat=null;
     document.getElementById('pg-dash').classList.add('active');
@@ -882,7 +882,7 @@ function navigate(page,arg){
     renderPlatPage(arg);
   }
 }
-
+ 
 // ══════════════════════════════════════════
 // GAME CARD HTML
 // ══════════════════════════════════════════
@@ -921,12 +921,12 @@ function gameCardHTML(g){
 function plateholderHTML(name,ico){
   return `<div class="gc-cover-placeholder"><div class="ph-ico">${ico||'🎮'}</div><div class="ph-txt">${name}</div></div>`;
 }
-
+ 
 // ══════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════
 const BC=['#c8f135','#a78bfa','#60a5fa','#fb923c','#4ade80','#f472b6','#facc15','#f87171','#34d399','#e879f9'];
-
+ 
 function renderDash(){
   updateQuickStats();
   updateXPUI();
@@ -934,12 +934,12 @@ function renderDash(){
   document.getElementById('dash-playing').innerHTML=playing.length
     ?playing.slice(0,6).map(gameCardHTML).join('')
     :'<div style="color:var(--text3);font-size:13px;padding:8px 0">Nenhum jogo em andamento.</div>';
-
+ 
   const finished=games.filter(g=>g.status==='Finalizado');
   document.getElementById('dash-finished').innerHTML=finished.length
     ?finished.slice(0,8).map(gameCardHTML).join('')
     :'<div style="color:var(--text3);font-size:13px;padding:8px 0">Nenhum jogo finalizado ainda.</div>';
-
+ 
   // Donut
   const total=games.length;
   const fin=finished.length,jog=playing.length,bkl=games.filter(g=>g.status==='Backlog').length,wish=games.filter(g=>g.status==='Desejos').length;
@@ -951,25 +951,25 @@ function renderDash(){
   } else {
     document.getElementById('d-donut').innerHTML='<span style="color:var(--text3);font-size:12px">Nenhum jogo ainda.</span>';
   }
-
+ 
   // Bars platforms
   const pCount={};
   games.forEach(g=>{const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);pids.forEach(pid=>{pCount[pid]=(pCount[pid]||0)+1;});});
   const topP=Object.entries(pCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const maxP=topP[0]?.[1]||1;
   document.getElementById('d-plats').innerHTML=topP.map(([pid,n],i)=>`<div class="bar-row"><span class="bar-lbl">${PM[pid]?.ico||''} ${PM[pid]?.lbl||pid}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxP*100}%;background:${BC[i%BC.length]}"></div></div><span class="bar-n">${n}</span></div>`).join('')||'<span style="color:var(--text3);font-size:12px">Sem dados.</span>';
-
+ 
   // Bars genres
   const gCount={};
   games.filter(g=>g.genre).forEach(g=>{const k=g.genre.trim();gCount[k]=(gCount[k]||0)+1;});
   const topG=Object.entries(gCount).sort((a,b)=>b[1]-a[1]).slice(0,7);
   const maxG=topG[0]?.[1]||1;
   document.getElementById('d-genres').innerHTML=topG.map(([genre,n],i)=>`<div class="bar-row"><span class="bar-lbl">${genre}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxG*100}%;background:${BC[(i+4)%BC.length]}"></div></div><span class="bar-n">${n}</span></div>`).join('')||'<span style="color:var(--text3);font-size:12px">Adicione gêneros.</span>';
-
+ 
   // Recent
   document.getElementById('d-recent').innerHTML=games.slice(0,5).map(g=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;background:var(--surface2);border-radius:var(--r-sm)"><span style="font-size:10px;padding:2px 7px;border-radius:100px;background:var(--surface3);color:var(--text2);white-space:nowrap">${platIcos(g)} ${PM[g.platformMain]?.lbl||g.platformMain||'—'}</span><span style="font-size:12px;font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(g.name)}</span><span class="gc-badge ${g.status==='Finalizado'?'gb-Finalizado':g.status==='Jogando'?'gb-Jogando':g.status==='Desejos'?'gb-Desejos':'gb-Backlog'}" style="font-size:10px">${g.status}</span>${g.score!==''?`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)">${g.score}</span>`:''}</div>`).join('')||'<span style="color:var(--text3);font-size:12px">Nenhum jogo.</span>';
 }
-
+ 
 // ══════════════════════════════════════════
 // LIBRARY
 // ══════════════════════════════════════════
@@ -993,7 +993,7 @@ function renderLibrary(){
   empty.style.display='none';
   grid.innerHTML=filtered.map(gameCardHTML).join('');
 }
-
+ 
 // ══════════════════════════════════════════
 // BACKLOG PRIORITY
 // ══════════════════════════════════════════
@@ -1002,12 +1002,12 @@ function renderBacklog(){
   const short=bkl.filter(g=>parseFloat(g.avgtime||999)<15).sort((a,b)=>parseFloat(a.avgtime||0)-parseFloat(b.avgtime||0));
   const med=bkl.filter(g=>{const h=parseFloat(g.avgtime||0);return h>=15&&h<=40;}).sort((a,b)=>parseFloat(a.avgtime)-parseFloat(b.avgtime));
   const lng=bkl.filter(g=>!g.avgtime||parseFloat(g.avgtime)>40).sort((a,b)=>parseFloat(b.avgtime||0)-parseFloat(a.avgtime||0));
-
+ 
   document.getElementById('bkl-total').textContent=bkl.length;
   document.getElementById('bkl-short').textContent=short.length;
   document.getElementById('bkl-med').textContent=med.length;
   document.getElementById('bkl-long').textContent=lng.length;
-
+ 
   ['short','med','long'].forEach((key,idx)=>{
     const list=[short,med,lng][idx];
     const el=document.getElementById(`bkl-list-${key}`);
@@ -1033,7 +1033,7 @@ function renderBacklog(){
       </div>`).join('');
   });
 }
-
+ 
 // ══════════════════════════════════════════
 // RECOMMENDER
 // ══════════════════════════════════════════
@@ -1053,7 +1053,7 @@ function recommend(){
   const diffPref=document.getElementById('rec-diff').value;
   const pool=games.filter(g=>g.status==='Backlog');
   if(!pool.length){document.getElementById('rec-result').innerHTML='<div class="rec-empty">Seu backlog está vazio! Adicione jogos com status Backlog.</div>';return;}
-
+ 
   let scored=pool.map(g=>{
     let s=0;
     if(g.avgtime&&parseFloat(g.avgtime)<=time)s+=30;
@@ -1063,17 +1063,17 @@ function recommend(){
     if(diffPref&&g.diff===diffPref)s+=15;
     return{g,s};
   }).sort((a,b)=>b.s-a.s);
-
+ 
   const best=scored[0]?.g;
   if(!best){document.getElementById('rec-result').innerHTML='<div class="rec-empty">Nenhum jogo do backlog compatível com os critérios.</div>';return;}
-
+ 
   const reasons=[];
   if(best.avgtime&&parseFloat(best.avgtime)<=time)reasons.push(`cabe no seu tempo disponível (~${best.avgtime}h)`);
   if(platPref&&best.platformMain===platPref)reasons.push(`está disponível em ${PM[platPref]?.lbl||platPref}`);
   if(genrePref&&(best.genre||'').toLowerCase().includes(genrePref))reasons.push(`é do gênero ${best.genre}`);
   if(diffPref&&best.diff===diffPref)reasons.push(`tem dificuldade ${best.diff}`);
   if(!reasons.length)reasons.push('melhor opção disponível no seu backlog');
-
+ 
   document.getElementById('rec-result').innerHTML=`
     <div class="rec-result">
       ${best.cover?`<img class="rec-result-cover" src="${esc(best.cover)}" alt="" onerror="this.outerHTML='<div class=rec-result-cover>${platIcos(best)||'🎮'}</div>'">`:`<div class="rec-result-cover" style="font-size:28px;display:grid;place-items:center">${platIcos(best)||'🎮'}</div>`}
@@ -1100,7 +1100,7 @@ function quickStatus(id,status){
   toast(`▶ ${g.name} marcado como ${status}!`);
   recommend();
 }
-
+ 
 // ══════════════════════════════════════════
 // ACHIEVEMENTS
 // ══════════════════════════════════════════
@@ -1124,7 +1124,7 @@ function renderAchievements(){
       <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center"><div style="font-size:11px;color:var(--text3)">Horas Registradas</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--orange)">${Math.round(games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0))}</div></div>
       <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center"><div style="font-size:11px;color:var(--text3)">Plataformas</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--purple)">${new Set(games.filter(g=>g.platformMain).map(g=>g.platformMain)).size}</div></div>
     </div>`;
-
+ 
   const unlocked=getUnlocked();
   document.getElementById('ach-grid').innerHTML=ACHIEVEMENTS_DEF.map(a=>`
     <div class="ach ${unlocked.includes(a.id)?'unlocked':'locked'}">
@@ -1134,7 +1134,7 @@ function renderAchievements(){
       <div class="ach-xp">+${a.xp} XP</div>
     </div>`).join('');
 }
-
+ 
 // ══════════════════════════════════════════
 // PLATFORM PAGE
 // ══════════════════════════════════════════
@@ -1143,7 +1143,7 @@ function renderPlatPage(pid){
   document.getElementById('pt-title').textContent=p.lbl;
   document.getElementById('pt-icon').textContent=p.ico;
   document.getElementById('pt-name').textContent=p.lbl;
-
+ 
   const pg=games.filter(g=>{
     const pids=(g.platforms&&g.platforms.length)?g.platforms:[g.platformMain].filter(Boolean);
     return pids.includes(pid);
@@ -1154,7 +1154,7 @@ function renderPlatPage(pid){
   const rated=pg.filter(g=>g.score!=='');
   const avg=rated.length?(rated.reduce((s,g)=>s+parseFloat(g.score),0)/rated.length).toFixed(1):null;
   const hrs=pg.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
-
+ 
   document.getElementById('pt-chips').innerHTML=`
     <span class="chip">${pg.length} jogos</span>
     <span class="chip" style="color:var(--accent)">${fin} finalizados</span>
@@ -1181,7 +1181,7 @@ function renderPlatGrid(pid,allPg){
   empty.style.display='none';
   grid.innerHTML=filtered.map(gameCardHTML).join('');
 }
-
+ 
 // ══════════════════════════════════════════
 // DETAIL MODAL
 // ══════════════════════════════════════════
@@ -1223,7 +1223,7 @@ function openDetail(id){
 }
 function closeDetail(){document.getElementById('doverlay').classList.remove('open');}
 document.getElementById('doverlay').addEventListener('click',e=>{if(e.target===document.getElementById('doverlay'))closeDetail();});
-
+ 
 // ══════════════════════════════════════════
 // MODAL — FORM
 // ══════════════════════════════════════════
@@ -1278,7 +1278,7 @@ function rebuildMainSelect(checkedIds){
   if(checkedIds.includes(prev))sel.value=prev;
   else if(checkedIds.length===1)sel.value=checkedIds[0];
 }
-
+ 
 function openModal(presetPlat){
   editId=null;
   document.getElementById('m-title').textContent='+ Adicionar Jogo';
@@ -1296,7 +1296,7 @@ function openModal(presetPlat){
 function closeModal(){document.getElementById('moverlay').classList.remove('open');editId=null;}
 document.getElementById('moverlay').addEventListener('click',e=>{if(e.target===document.getElementById('moverlay'))closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDetail();}});
-
+ 
 function clearForm(){
   ['f-name','f-cover','f-genre','f-year','f-score','f-datestart','f-dateend','f-hours','f-avgtime','f-obs','f-rawg-id','f-rawg-release','f-rawg-genres'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.value='';
@@ -1304,7 +1304,7 @@ function clearForm(){
   document.getElementById('f-status').value='Backlog';
   document.getElementById('f-diff').value='';
 }
-
+ 
 // ══════════════════════════════════════════
 // CRUD
 // ══════════════════════════════════════════
@@ -1360,7 +1360,7 @@ function refresh(){
   else if(id==='pg-ach')renderAchievements();
   else if(id==='pg-plat'&&curPlat)renderPlatPage(curPlat);
 }
-
+ 
 function editGame(id){
   const g=games.find(x=>x.id===id);if(!g)return;
   editId=g.id;
@@ -1392,27 +1392,27 @@ function editGame(id){
   document.getElementById('btn-save').textContent='Atualizar';
   document.getElementById('moverlay').classList.add('open');
 }
-
+ 
 function deleteGame(id){
   if(!confirm('Remover este jogo?'))return;
   games=games.filter(g=>g.id!==id);
   persist();buildSb();updateQuickStats();updateXPUI();
   toast('🗑️ Removido.');refresh();
 }
-
+ 
 // ══════════════════════════════════════════
 // BACKUP — EXPORT & IMPORT
 // ══════════════════════════════════════════
 function exportBackup(){
   if(!games.length){toast('⚠️ Nenhum jogo para exportar.');return;}
-
+ 
   const payload={
     version:2,
     exportedAt:new Date().toISOString(),
     totalGames:games.length,
     games:games,
   };
-
+ 
   const json=JSON.stringify(payload,null,2);
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -1424,18 +1424,18 @@ function exportBackup(){
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},500);
   toast(`✅ Backup exportado — ${games.length} jogo${games.length!==1?'s':''}`);
 }
-
+ 
 let _pendingImport=null;
-
+ 
 function importBackup(input){
   const file=input.files[0];
   input.value=''; // reset so same file can be re-selected
   if(!file)return;
-
+ 
   if(!file.name.endsWith('.json')&&file.type!=='application/json'){
     toast('❌ Arquivo inválido. Selecione um .json');return;
   }
-
+ 
   const reader=new FileReader();
   reader.onerror=()=>toast('❌ Erro ao ler o arquivo.');
   reader.onload=function(e){
@@ -1447,7 +1447,7 @@ function importBackup(input){
       console.error('JSON parse error:',err);
       return;
     }
-
+ 
     // Accept both raw array and wrapped {games:[...]} formats
     let incoming=null;
     if(Array.isArray(parsed)){
@@ -1455,26 +1455,26 @@ function importBackup(input){
     }else if(parsed&&Array.isArray(parsed.games)){
       incoming=parsed.games;
     }
-
+ 
     if(!incoming||!incoming.length){
       toast('❌ Backup vazio ou formato não reconhecido.');return;
     }
-
+ 
     // Basic structural validation — every entry must have at least a name
     const invalid=incoming.filter(g=>!g||typeof g.name!=='string'||!g.name.trim());
     if(invalid.length){
       toast(`❌ ${invalid.length} registro(s) inválido(s) no backup. Verifique o arquivo.`);return;
     }
-
+ 
     _pendingImport=incoming;
-
+ 
     // Build summary for confirmation dialog
     const fin=incoming.filter(g=>g.status==='Finalizado').length;
     const jog=incoming.filter(g=>g.status==='Jogando').length;
     const bkl=incoming.filter(g=>g.status==='Backlog').length;
     const wish=incoming.filter(g=>g.status==='Desejos').length;
     const exportedAt=parsed.exportedAt?new Date(parsed.exportedAt).toLocaleString('pt-BR'):'desconhecida';
-
+ 
     document.getElementById('bk-summary').innerHTML=
       `<strong style="color:var(--text)">${incoming.length} jogo${incoming.length!==1?'s':''}</strong> encontrados no arquivo.<br><br>`+
       `<span style="color:var(--text3);font-size:11px">Data do backup: ${exportedAt}</span><br><br>`+
@@ -1483,18 +1483,18 @@ function importBackup(input){
       `Backlog: <strong>${bkl}</strong> &nbsp;·&nbsp; `+
       `Desejos: <strong>${wish}</strong>`+
       (games.length?`<br><br><span style="color:var(--orange)">⚠️ Isso substituirá seus <strong>${games.length}</strong> jogo${games.length!==1?'s':''} atuais.</span>`:'');
-
+ 
     document.getElementById('bk-confirm-btn').onclick=confirmImport;
-
+ 
     const ov=document.getElementById('bk-overlay');
     ov.style.display='grid';
   };
   reader.readAsText(file,'UTF-8');
 }
-
+ 
 function confirmImport(){
   if(!_pendingImport){cancelImport();return;}
-
+ 
   games=_pendingImport.map(g=>{
     if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
     if(!Array.isArray(g.platforms)||!g.platforms.length){
@@ -1505,7 +1505,7 @@ function confirmImport(){
     if(typeof g.score==='undefined')g.score='';
     return g;
   });
-
+ 
   saveData(games);
   _pendingImport=null;
   cancelImport();
@@ -1513,12 +1513,12 @@ function confirmImport(){
   navigate('dashboard');
   toast(`✅ ${games.length} jogo${games.length!==1?'s':''} importado${games.length!==1?'s':''}!`);
 }
-
+ 
 function cancelImport(){
   _pendingImport=null;
   document.getElementById('bk-overlay').style.display='none';
 }
-
+ 
 // ══════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════
@@ -1529,7 +1529,7 @@ function toast(msg){
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 }
-
+ 
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
@@ -1539,7 +1539,7 @@ function initApp(){
   updateXPUI();
   renderDash();
 }
-
+ 
 // Try to load from artifact window.storage asynchronously
 // (artifact API is async; localStorage is already loaded synchronously above)
 if(hasArtifactStorage()){
@@ -1563,8 +1563,9 @@ if(hasArtifactStorage()){
     }
   }).catch(e=>console.warn('artifact storage get failed:',e));
 }
-
+ 
 initApp();
 </script>
 </body>
 </html>
+ 
