@@ -356,6 +356,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="topbar">
       <div class="topbar-title">Dashboard</div>
       <div class="topbar-right">
+        <button class="btn btn-ghost btn-sm" onclick="exportBackup()" title="Exportar backup JSON">⬇ Exportar</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()" title="Importar backup JSON">⬆ Importar</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
         <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
       </div>
     </div>
@@ -563,6 +566,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
 
 <div id="toast"></div>
+
+<!-- BACKUP IMPORT CONFIRM MODAL -->
+<div id="bk-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);place-items:center;z-index:300;backdrop-filter:blur(6px);padding:16px">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;max-width:420px;overflow:hidden;animation:mi .2s cubic-bezier(.34,1.2,.64,1);position:relative">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--orange),transparent)"></div>
+    <div style="padding:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--orange);margin-bottom:14px">⚠️ Importar Backup</div>
+      <div id="bk-summary" style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:18px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" id="bk-confirm-btn">✓ Confirmar Importação</button>
+        <button class="btn btn-ghost btn-sm" onclick="cancelImport()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════
@@ -1380,6 +1398,125 @@ function deleteGame(id){
   games=games.filter(g=>g.id!==id);
   persist();buildSb();updateQuickStats();updateXPUI();
   toast('🗑️ Removido.');refresh();
+}
+
+// ══════════════════════════════════════════
+// BACKUP — EXPORT & IMPORT
+// ══════════════════════════════════════════
+function exportBackup(){
+  if(!games.length){toast('⚠️ Nenhum jogo para exportar.');return;}
+
+  const payload={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    totalGames:games.length,
+    games:games,
+  };
+
+  const json=JSON.stringify(payload,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='game-tracker-backup.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},500);
+  toast(`✅ Backup exportado — ${games.length} jogo${games.length!==1?'s':''}`);
+}
+
+let _pendingImport=null;
+
+function importBackup(input){
+  const file=input.files[0];
+  input.value=''; // reset so same file can be re-selected
+  if(!file)return;
+
+  if(!file.name.endsWith('.json')&&file.type!=='application/json'){
+    toast('❌ Arquivo inválido. Selecione um .json');return;
+  }
+
+  const reader=new FileReader();
+  reader.onerror=()=>toast('❌ Erro ao ler o arquivo.');
+  reader.onload=function(e){
+    let parsed;
+    try{
+      parsed=JSON.parse(e.target.result);
+    }catch(err){
+      toast('❌ JSON inválido. O arquivo está corrompido ou não é um backup válido.');
+      console.error('JSON parse error:',err);
+      return;
+    }
+
+    // Accept both raw array and wrapped {games:[...]} formats
+    let incoming=null;
+    if(Array.isArray(parsed)){
+      incoming=parsed;
+    }else if(parsed&&Array.isArray(parsed.games)){
+      incoming=parsed.games;
+    }
+
+    if(!incoming||!incoming.length){
+      toast('❌ Backup vazio ou formato não reconhecido.');return;
+    }
+
+    // Basic structural validation — every entry must have at least a name
+    const invalid=incoming.filter(g=>!g||typeof g.name!=='string'||!g.name.trim());
+    if(invalid.length){
+      toast(`❌ ${invalid.length} registro(s) inválido(s) no backup. Verifique o arquivo.`);return;
+    }
+
+    _pendingImport=incoming;
+
+    // Build summary for confirmation dialog
+    const fin=incoming.filter(g=>g.status==='Finalizado').length;
+    const jog=incoming.filter(g=>g.status==='Jogando').length;
+    const bkl=incoming.filter(g=>g.status==='Backlog').length;
+    const wish=incoming.filter(g=>g.status==='Desejos').length;
+    const exportedAt=parsed.exportedAt?new Date(parsed.exportedAt).toLocaleString('pt-BR'):'desconhecida';
+
+    document.getElementById('bk-summary').innerHTML=
+      `<strong style="color:var(--text)">${incoming.length} jogo${incoming.length!==1?'s':''}</strong> encontrados no arquivo.<br><br>`+
+      `<span style="color:var(--text3);font-size:11px">Data do backup: ${exportedAt}</span><br><br>`+
+      `Finalizados: <strong>${fin}</strong> &nbsp;·&nbsp; `+
+      `Jogando: <strong>${jog}</strong> &nbsp;·&nbsp; `+
+      `Backlog: <strong>${bkl}</strong> &nbsp;·&nbsp; `+
+      `Desejos: <strong>${wish}</strong>`+
+      (games.length?`<br><br><span style="color:var(--orange)">⚠️ Isso substituirá seus <strong>${games.length}</strong> jogo${games.length!==1?'s':''} atuais.</span>`:'');
+
+    document.getElementById('bk-confirm-btn').onclick=confirmImport;
+
+    const ov=document.getElementById('bk-overlay');
+    ov.style.display='grid';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function confirmImport(){
+  if(!_pendingImport){cancelImport();return;}
+
+  games=_pendingImport.map(g=>{
+    if(!g.platformMain&&g.platform){g.platformMain=g.platform;}
+    if(!Array.isArray(g.platforms)||!g.platforms.length){
+      g.platforms=g.platformMain?[g.platformMain]:[];
+    }
+    g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
+    if(g.status==='Lista de Desejos'){g.status='Desejos';}
+    if(typeof g.score==='undefined')g.score='';
+    return g;
+  });
+
+  saveData(games);
+  _pendingImport=null;
+  cancelImport();
+  buildSb();updateQuickStats();updateXPUI();
+  navigate('dashboard');
+  toast(`✅ ${games.length} jogo${games.length!==1?'s':''} importado${games.length!==1?'s':''}!`);
+}
+
+function cancelImport(){
+  _pendingImport=null;
+  document.getElementById('bk-overlay').style.display='none';
 }
 
 // ══════════════════════════════════════════
