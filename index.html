@@ -1734,7 +1734,7 @@ function _buildRow(g){
     status:       g.status       || 'Backlog',
     release_year: g.year ? (parseInt(g.year, 10) || null) : null,
     cover_url:    g.cover        || '',
-    platforms:    JSON.stringify(Array.isArray(g.platforms) ? g.platforms : []),
+    platforms:    (Array.isArray(g.platforms) ? g.platforms : []).join(', '),
     score:        (g.score !== '' && g.score != null) ? (parseFloat(g.score) || null) : null,
     difficulty:   g.diff         || null,
     hours_played: g.hours        ? (parseFloat(g.hours)   || null) : null,
@@ -1744,7 +1744,7 @@ function _buildRow(g){
     notes:        g.obs          || '',
     rawg_id:      g.rawgId       || null,
     rawg_release: g.rawgRelease  || null,
-    rawg_genres:  g.rawgGenres   || '',
+    rawg_genres:  (Array.isArray(g.rawgGenres) ? g.rawgGenres.join(', ') : (g.rawgGenres || '')),
     payload:      JSON.stringify(g),
   };
   // Always set updated_at immediately before sending — never rely on DB default
