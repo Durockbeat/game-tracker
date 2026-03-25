@@ -1733,6 +1733,71 @@ function clearForm(){
 // ══════════════════════════════════════════
 // CRUD
 // ══════════════════════════════════════════
+// ── Cloud upsert for a single game entry ──
+async function _upsertGameToCloud(g){
+  const sb = getSbClient();
+  const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+  if(!sb || !isOnline) return;
+  try{
+    const row = {
+      id:           String(g.id),
+      user_id:      g.user_id || currentUserId,
+      title:        g.name    || '',
+      genre:        g.genre   || '',
+      platform:     g.platformMain || '',
+      status:       g.status  || 'Backlog',
+      release_year: g.year    ? parseInt(g.year, 10) || null : null,
+      cover_url:    g.cover   || '',
+      // extended fields (stored for completeness)
+      platforms:    JSON.stringify(g.platforms || []),
+      score:        g.score !== '' ? parseFloat(g.score) || null : null,
+      difficulty:   g.diff   || null,
+      hours_played: g.hours  ? parseFloat(g.hours) || null : null,
+      avg_time:     g.avgtime? parseFloat(g.avgtime)|| null : null,
+      date_start:   g.dateStart  || null,
+      date_end:     g.dateEnd    || null,
+      notes:        g.obs    || '',
+      rawg_id:      g.rawgId || null,
+      rawg_release: g.rawgRelease || null,
+      rawg_genres:  g.rawgGenres  || '',
+      payload:      JSON.stringify(g),
+      updated_at:   new Date().toISOString(),
+    };
+    const { error } = await sb.from(SB_TABLE).upsert(row, { onConflict: 'id' });
+    if(error){
+      console.log('[GT] cloud upsert error:', error.message);
+      _setSyncStatus('error');
+    } else {
+      console.log('[GT] cloud save success');
+      _setSyncStatus('synced');
+    }
+  }catch(e){
+    console.log('[GT] cloud upsert exception:', e && e.message ? e.message : '');
+    _setSyncStatus('error');
+  }
+}
+ 
+// ── Cloud delete for a single game entry ──
+async function _deleteGameFromCloud(id){
+  const sb = getSbClient();
+  const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+  if(!sb || !isOnline) return;
+  try{
+    const { error } = await sb
+      .from(SB_TABLE)
+      .delete()
+      .eq('id', String(id))
+      .eq('user_id', currentUserId);
+    if(error){
+      console.log('[GT] cloud delete error:', error.message);
+    } else {
+      console.log('[GT] cloud delete success id=' + id);
+    }
+  }catch(e){
+    console.log('[GT] cloud delete exception:', e && e.message ? e.message : '');
+  }
+}
+ 
 function saveGame(){
   const name=document.getElementById('f-name').value.trim();
   if(!name){toast('⚠️ Nome é obrigatório.');return;}
@@ -1740,7 +1805,7 @@ function saveGame(){
   const platformMain=document.getElementById('f-plat-main').value||platforms[0]||'Outro';
   const g={
     id:editId||Date.now(),
-    user_id:currentUserId,            // multi-user: stamped on every entry
+    user_id:currentUserId,
     name,
     cover:document.getElementById('f-cover').value.trim(),
     platforms,platformMain,
@@ -1754,7 +1819,6 @@ function saveGame(){
     hours:document.getElementById('f-hours').value.trim(),
     avgtime:document.getElementById('f-avgtime').value.trim(),
     obs:document.getElementById('f-obs').value.trim(),
-    // RAWG / future API fields
     rawgId:document.getElementById('f-rawg-id').value,
     rawgRelease:document.getElementById('f-rawg-release').value,
     rawgGenres:document.getElementById('f-rawg-genres').value,
@@ -1767,7 +1831,11 @@ function saveGame(){
     games.unshift(g);
     toast('🎮 Jogo adicionado!');
   }
-  persist();closeModal();buildSb();updateQuickStats();updateXPUI();
+  // 1. Always save locally first (sync, instant)
+  persist();
+  // 2. Attempt cloud upsert for this specific game (async, silent fallback)
+  _upsertGameToCloud(g);
+  closeModal();buildSb();updateQuickStats();updateXPUI();
   // Check new achievements
   const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
   if(newUnlocked.length){
@@ -1822,7 +1890,10 @@ function editGame(id){
 function deleteGame(id){
   if(!confirm('Remover este jogo?'))return;
   games=games.filter(g=>g.id!==id);
+  // 1. Always save locally first (sync, instant)
   persist();buildSb();updateQuickStats();updateXPUI();
+  // 2. Attempt cloud delete (async, silent fallback)
+  _deleteGameFromCloud(id);
   toast('🗑️ Removido.');refresh();
 }
  
