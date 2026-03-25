@@ -1024,34 +1024,23 @@ async function _saveRemote(gamesArray){
   if(!sb || !isOnline) return;
   _setSyncStatus('syncing');
   try{
-    // Upsert all games for this user_id
-    const rows = gamesArray.map(g=>({
-      id:            String(g.id),
-      user_id:       currentUserId,
-      name:          g.name||'',
-      platform_main: g.platformMain||'',
-      platforms:     JSON.stringify(g.platforms||[]),
-      status:        g.status||'Backlog',
-      genre:         g.genre||'',
-      year:          g.year||null,
-      score:         g.score!==''?parseFloat(g.score):null,
-      difficulty:    g.diff||null,
-      hours_played:  g.hours?parseFloat(g.hours):null,
-      avg_time:      g.avgtime?parseFloat(g.avgtime):null,
-      date_start:    g.dateStart||null,
-      date_end:      g.dateEnd||null,
-      notes:         g.obs||'',
-      cover_url:     g.cover||'',
-      rawg_id:       g.rawgId||null,
-      rawg_release:  g.rawgRelease||null,
-      rawg_genres:   g.rawgGenres||'',
-      payload:       JSON.stringify(g), // full object for easy restore
-      updated_at:    new Date().toISOString(),
-    }));
-    const { error } = await sb.from(SB_TABLE).upsert(rows, {onConflict:'id'});
-    if(error){ console.log('[GT] Supabase upsert error:', error.message); _setSyncStatus('error'); }
-    else { _setSyncStatus('synced'); }
-  }catch(e){ console.log('[GT] Supabase save exception:', e); _setSyncStatus('error'); }
+    // _buildRow is defined above — ensures id is always string and updated_at is fresh
+    const rows = gamesArray.map(_buildRow);
+    // Array form + onConflict:'id' prevents duplicate key violations
+    const { error } = await sb
+      .from(SB_TABLE)
+      .upsert(rows, { onConflict: 'id' });
+    if(error){
+      console.log('[GT] bulk upsert error:', error.message);
+      _setSyncStatus('error');
+    } else {
+      console.log('[GT] cloud save success');
+      _setSyncStatus('synced');
+    }
+  }catch(e){
+    console.log('[GT] bulk upsert exception:', e && e.message ? e.message : '');
+    _setSyncStatus('error');
+  }
 }
  
 // ── PUBLIC: saveData() — always local, async remote ──
@@ -1733,37 +1722,48 @@ function clearForm(){
 // ══════════════════════════════════════════
 // CRUD
 // ══════════════════════════════════════════
+// ── Build a Supabase row from a game object ──
+// id is always a string; updated_at is always set fresh before sending.
+function _buildRow(g){
+  const row = {
+    id:           String(g.id),           // must be string, always present
+    user_id:      g.user_id || currentUserId,
+    title:        g.name         || '',
+    genre:        g.genre        || '',
+    platform:     g.platformMain || '',
+    status:       g.status       || 'Backlog',
+    release_year: g.year ? (parseInt(g.year, 10) || null) : null,
+    cover_url:    g.cover        || '',
+    platforms:    JSON.stringify(Array.isArray(g.platforms) ? g.platforms : []),
+    score:        (g.score !== '' && g.score != null) ? (parseFloat(g.score) || null) : null,
+    difficulty:   g.diff         || null,
+    hours_played: g.hours        ? (parseFloat(g.hours)   || null) : null,
+    avg_time:     g.avgtime      ? (parseFloat(g.avgtime) || null) : null,
+    date_start:   g.dateStart    || null,
+    date_end:     g.dateEnd      || null,
+    notes:        g.obs          || '',
+    rawg_id:      g.rawgId       || null,
+    rawg_release: g.rawgRelease  || null,
+    rawg_genres:  g.rawgGenres   || '',
+    payload:      JSON.stringify(g),
+  };
+  // Always set updated_at immediately before sending — never rely on DB default
+  row.updated_at = new Date().toISOString();
+  return row;
+}
+ 
 // ── Cloud upsert for a single game entry ──
 async function _upsertGameToCloud(g){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
   try{
-    const row = {
-      id:           String(g.id),
-      user_id:      g.user_id || currentUserId,
-      title:        g.name    || '',
-      genre:        g.genre   || '',
-      platform:     g.platformMain || '',
-      status:       g.status  || 'Backlog',
-      release_year: g.year    ? parseInt(g.year, 10) || null : null,
-      cover_url:    g.cover   || '',
-      // extended fields (stored for completeness)
-      platforms:    JSON.stringify(g.platforms || []),
-      score:        g.score !== '' ? parseFloat(g.score) || null : null,
-      difficulty:   g.diff   || null,
-      hours_played: g.hours  ? parseFloat(g.hours) || null : null,
-      avg_time:     g.avgtime? parseFloat(g.avgtime)|| null : null,
-      date_start:   g.dateStart  || null,
-      date_end:     g.dateEnd    || null,
-      notes:        g.obs    || '',
-      rawg_id:      g.rawgId || null,
-      rawg_release: g.rawgRelease || null,
-      rawg_genres:  g.rawgGenres  || '',
-      payload:      JSON.stringify(g),
-      updated_at:   new Date().toISOString(),
-    };
-    const { error } = await sb.from(SB_TABLE).upsert(row, { onConflict: 'id' });
+    const row = _buildRow(g);
+    // Pass row as an ARRAY — Supabase JS v2 upsert is more reliable with arrays.
+    // onConflict: 'id' tells Postgres to UPDATE when a row with the same id exists.
+    const { error } = await sb
+      .from(SB_TABLE)
+      .upsert([row], { onConflict: 'id' });
     if(error){
       console.log('[GT] cloud upsert error:', error.message);
       _setSyncStatus('error');
