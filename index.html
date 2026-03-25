@@ -483,6 +483,33 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .gc-name{font-size:10px}
 }
  
+/* ═══ AUTH MODAL ═══ */
+#auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:300;backdrop-filter:blur(8px);padding:16px}
+#auth-overlay.open{display:grid}
+.auth-modal{background:var(--surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:380px;overflow:hidden;animation:mi .22s cubic-bezier(.34,1.2,.64,1);position:relative}
+.auth-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan),transparent)}
+.auth-body{padding:28px 28px 24px}
+.auth-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.auth-logo span{color:var(--accent)}
+.auth-sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+.auth-tabs{display:flex;gap:0;margin-bottom:22px;background:var(--surface2);border-radius:8px;padding:3px}
+.auth-tab{flex:1;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:7px;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:6px;transition:all var(--tr)}
+.auth-tab.active{background:var(--surface3);color:var(--text)}
+.auth-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.auth-field label{font-size:10px;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);font-weight:500}
+.auth-field input{background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 12px;border-radius:var(--r-sm);outline:none;transition:border-color var(--tr);width:100%}
+.auth-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(200,241,53,.08)}
+.auth-err{font-size:12px;color:var(--red);margin-bottom:10px;min-height:16px;display:none}
+.auth-err.show{display:block}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--text3);font-size:11px}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border2)}
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:10px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--tr)}
+.btn-google:hover{border-color:var(--text2);background:var(--surface3)}
+/* user chip in topbar */
+.user-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);padding:5px 10px;border-radius:100px;cursor:default;max-width:180px;overflow:hidden;white-space:nowrap}
+.user-chip-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0}
+.user-chip-email{overflow:hidden;text-overflow:ellipsis;flex:1}
+ 
 /* ─── DESKTOP > 1200px ─── */
 @media (min-width:1201px){
   #sidebar{
@@ -587,6 +614,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="topbar">
       <div class="topbar-title">Dashboard</div>
       <div class="topbar-right">
+        <div id="user-chip" class="user-chip" style="display:none">
+          <span class="user-chip-dot"></span>
+          <span class="user-chip-email" id="user-chip-email">–</span>
+          <button onclick="authLogout()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;padding:0;margin-left:4px;flex-shrink:0" title="Sair">✕</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-auth-login" onclick="openAuthModal()" style="display:none">Entrar</button>
         <button class="btn btn-ghost btn-sm" onclick="exportBackup()" title="Exportar backup JSON" data-icon="⬇">⬇ Exportar</button>
         <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()" title="Importar backup JSON" data-icon="⬆">⬆ Importar</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
@@ -797,6 +830,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 </div>
  
 <div id="toast"></div>
+ 
+<!-- ═══ AUTH MODAL ═══ -->
+<div id="auth-overlay">
+  <div class="auth-modal">
+    <div class="auth-body">
+      <div class="auth-logo">Game<span>Tracker</span></div>
+      <div class="auth-sub">Entre para sincronizar seus dados na nuvem</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Criar conta</button>
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="seu@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')authSubmit()">
+      </div>
+      <div class="auth-field">
+        <label>Senha</label>
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSubmit()">
+      </div>
+      <div class="auth-err" id="auth-err"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="authSubmit()" id="auth-submit-btn">Entrar</button>
+      <div class="auth-divider">ou</div>
+      <button class="btn-google" onclick="authGoogle()">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+        Entrar com Google
+      </button>
+      <div style="margin-top:12px;text-align:center">
+        <button onclick="closeAuthModal()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer">Continuar sem conta (modo offline)</button>
+      </div>
+    </div>
+  </div>
+</div>
  
 <!-- BACKUP IMPORT CONFIRM MODAL -->
 <div id="bk-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);place-items:center;z-index:300;backdrop-filter:blur(6px);padding:16px">
@@ -2021,6 +2086,140 @@ function toast(msg){
 }
  
 // ══════════════════════════════════════════
+// AUTH — Supabase Auth (email/password + Google OAuth)
+// ══════════════════════════════════════════
+ 
+let _currentSession = null; // holds supabase session or null
+ 
+// ── Update UI to reflect auth state ──
+function _applyAuthState(session){
+  _currentSession = session;
+  const loggedIn = !!(session && session.user);
+  const email    = loggedIn ? (session.user.email || session.user.id) : null;
+ 
+  // Update currentUserId so all saves use the real UID
+  currentUserId = loggedIn ? session.user.id : 'local-user';
+ 
+  // Show/hide topbar elements
+  const chip       = document.getElementById('user-chip');
+  const chipEmail  = document.getElementById('user-chip-email');
+  const loginBtn   = document.getElementById('btn-auth-login');
+ 
+  if(chip && chipEmail && loginBtn){
+    if(loggedIn){
+      chipEmail.textContent = email;
+      chip.style.display    = 'flex';
+      loginBtn.style.display= 'none';
+    } else {
+      chip.style.display    = 'none';
+      loginBtn.style.display= 'inline-flex';
+    }
+  }
+ 
+  // Update sidebar sync label
+  if(loggedIn){
+    const lbl = document.getElementById('sb-sync-lbl');
+    if(lbl){ lbl.textContent = email ? email.split('@')[0] : 'Logado'; lbl.style.color='var(--green)'; }
+    const dot = document.getElementById('sb-sync-dot');
+    if(dot){ dot.style.background='var(--green)'; }
+  }
+}
+ 
+// ── Auth modal helpers ──
+let _authTab = 'login';
+function openAuthModal(){
+  document.getElementById('auth-overlay').classList.add('open');
+  document.getElementById('auth-email').focus();
+}
+function closeAuthModal(){
+  document.getElementById('auth-overlay').classList.remove('open');
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-err').textContent='';
+}
+function switchAuthTab(tab){
+  _authTab = tab;
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('auth-submit-btn').textContent = tab==='login' ? 'Entrar' : 'Criar conta';
+  document.getElementById('auth-err').classList.remove('show');
+}
+function _authErr(msg){
+  const el = document.getElementById('auth-err');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+ 
+async function authSubmit(){
+  const sb    = getSbClient();
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-password').value;
+  if(!email || !pass){ _authErr('Preencha email e senha.'); return; }
+  if(!sb){ _authErr('Sem conexão com o servidor. Tente novamente.'); return; }
+  const btn = document.getElementById('auth-submit-btn');
+  btn.textContent = '…'; btn.disabled = true;
+  try{
+    let result;
+    if(_authTab === 'signup'){
+      result = await sb.auth.signUp({ email, password: pass });
+    } else {
+      result = await sb.auth.signInWithPassword({ email, password: pass });
+    }
+    if(result.error){
+      _authErr(result.error.message);
+    } else {
+      if(_authTab === 'signup' && !result.data.session){
+        _authErr('✅ Confirme seu email para ativar a conta.');
+      } else {
+        closeAuthModal();
+        // onAuthStateChange will fire and handle the rest
+      }
+    }
+  }catch(e){
+    _authErr('Erro inesperado. Tente novamente.');
+    console.log('[GT] authSubmit error:', e && e.message ? e.message : e);
+  }finally{
+    btn.textContent = _authTab==='login' ? 'Entrar' : 'Criar conta';
+    btn.disabled = false;
+  }
+}
+ 
+async function authGoogle(){
+  const sb = getSbClient();
+  if(!sb){ toast('❌ Sem conexão com Supabase'); return; }
+  try{
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href },
+    });
+    if(error) toast('❌ Erro Google OAuth: ' + error.message);
+  }catch(e){
+    console.log('[GT] Google OAuth error:', e && e.message ? e.message : e);
+  }
+}
+ 
+async function authLogout(){
+  const sb = getSbClient();
+  try{
+    if(sb) await sb.auth.signOut();
+  }catch(e){
+    console.log('[GT] signOut error:', e && e.message ? e.message : e);
+  }
+  // Reset to offline mode
+  currentUserId = 'local-user';
+  _currentSession = null;
+  _applyAuthState(null);
+  _setSyncStatus('local');
+  toast('👋 Saiu da conta');
+}
+ 
+document.getElementById('auth-overlay').addEventListener('click', e=>{
+  if(e.target === document.getElementById('auth-overlay')) closeAuthModal();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeAuthModal();
+});
+ 
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function initApp(){
@@ -2028,7 +2227,7 @@ function initApp(){
   updateQuickStats();
   updateXPUI();
   renderDash();
-  _setSyncStatus(_syncStatus); // render initial dot
+  _setSyncStatus(_syncStatus);
 }
  
 // ── Async artifact storage bootstrap ──
@@ -2048,34 +2247,58 @@ if(hasArtifactStorage()){
   }).catch(e=>console.log('[GT] artifact storage get failed:',e));
 }
  
-// ── Supabase async bootstrap ──
-// Wrapped in setTimeout so the UI renders first, then we attempt remote sync.
-// All errors are caught — never interrupts offline use.
+// ── Auth + Supabase async bootstrap ──
 if(typeof window !== 'undefined'){
   setTimeout(async()=>{
     try{
-      const available = await isSupabaseAvailable();
-      if(available){
-        console.log('[GT] Supabase reachable — syncing remote data');
-        await loadFromSupabase();
-      } else {
+      const sb = getSbClient();
+      if(!sb){
         console.log('[GT] Supabase not available — offline mode');
         _setSyncStatus('local');
+        // Show "Entrar" button even offline (it will fail gracefully)
+        const loginBtn = document.getElementById('btn-auth-login');
+        if(loginBtn) loginBtn.style.display='inline-flex';
+        return;
       }
+ 
+      // Listen for auth state changes (login, logout, token refresh, OAuth callback)
+      sb.auth.onAuthStateChange(async(event, session)=>{
+        console.log('[GT] auth ready', event);
+        _applyAuthState(session);
+        if(session && session.user){
+          // User just logged in — load their data from Supabase
+          _setSyncStatus('syncing');
+          await loadFromSupabase();
+        }
+      });
+ 
+      // Check existing session on page load
+      const { data: { session } } = await sb.auth.getSession();
+      if(session){
+        _applyAuthState(session);
+        _setSyncStatus('syncing');
+        await loadFromSupabase();
+      } else {
+        // No session — show login button, try anonymous sync
+        const loginBtn = document.getElementById('btn-auth-login');
+        if(loginBtn) loginBtn.style.display='inline-flex';
+        const available = await isSupabaseAvailable();
+        if(available) await loadFromSupabase();
+        else _setSyncStatus('local');
+      }
+ 
     }catch(e){
-      console.log('[GT] Supabase bootstrap error — offline fallback:', e && e.message ? e.message : '');
+      console.log('[GT] Auth bootstrap error — offline fallback:', e && e.message ? e.message : '');
       _setSyncStatus('local');
     }
-  }, 800); // small delay so initApp() renders before any async work
+  }, 600);
  
-  // Online / offline event listeners (safe registration)
   window.addEventListener('online', async()=>{
-    console.log('[GT] Connection restored — syncing to Supabase');
+    console.log('[GT] Connection restored');
     toast('🌐 Conexão restaurada — sincronizando…');
-    try{ await _saveRemote(games); }catch(e){ console.log('[GT] Re-sync error:', e && e.message ? e.message : ''); }
+    try{ await _saveRemote(games); }catch(e){ console.log('[GT] re-sync error:', e && e.message ? e.message : ''); }
   });
   window.addEventListener('offline',()=>{
-    console.log('[GT] Connection lost — offline mode active');
     _setSyncStatus('local');
     toast('📴 Sem conexão — salvando localmente');
   });
