@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GameTracker Pessoal</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -562,6 +563,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <span class="sb-xp-pts" id="sb-xp-pts">0 XP</span>
     </div>
     <div class="sb-xp-bar"><div class="sb-xp-fill" id="sb-xp-fill" style="width:0%"></div></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:7px;white-space:nowrap;overflow:hidden">
+      <span id="sb-sync-dot" title="Offline" style="width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s"></span>
+      <span id="sb-sync-lbl" style="font-size:9px;color:var(--text3);letter-spacing:.5px">Offline</span>
+    </div>
   </div>
 </nav>
  
@@ -884,20 +889,98 @@ const ACHIEVEMENTS_DEF=[
 ];
  
 // ══════════════════════════════════════════
+// SUPABASE CLIENT — safe init for all environments
+// Compatible: Claude artifact · GitHub Pages · offline
+// ══════════════════════════════════════════
+const SB_URL   = 'https://vtekmlodhursxaxphdjl.supabase.co';
+const SB_KEY   = 'sb_publishable_Tj-y0lyf_3Iv9b4kJ8zhEw_T1vM65Mc';
+const SB_TABLE = 'games';
+ 
+let _sbClient = null;
+let _sbReady  = false; // true once init succeeded
+ 
+function getSbClient(){
+  if(_sbClient) return _sbClient;
+  // Guard: only run in a real browser window context
+  if(typeof window === 'undefined') return null;
+  try{
+    // window.supabase is injected by the CDN <script> tag
+    if(typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function'){
+      _sbClient = window.supabase.createClient(SB_URL, SB_KEY, {
+        auth: {
+          persistSession:   false, // disables BroadcastChannel → fixes "Headers could not be cloned"
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+        realtime: { params: { eventsPerSecond: 0 } }, // no realtime subscriptions
+      });
+      _sbReady = true;
+      console.log('[GT] Supabase client ready');
+    } else {
+      console.log('[GT] Supabase SDK not loaded — offline mode');
+    }
+  }catch(err){
+    console.log('[GT] Supabase init error — offline fallback:', err && err.message ? err.message : err);
+    _sbClient = null;
+    _sbReady  = false;
+  }
+  return _sbClient;
+}
+ 
+// ── isSupabaseAvailable() — safe probe, returns true/false ──
+async function isSupabaseAvailable(){
+  if(typeof window === 'undefined') return false;
+  // Check navigator.onLine safely (not available in some sandboxes)
+  if(typeof navigator !== 'undefined' && navigator.onLine === false) return false;
+  const sb = getSbClient();
+  if(!sb) return false;
+  try{
+    // Abort after 4 s so we never block the offline user
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const tid  = ctrl ? setTimeout(()=>ctrl.abort(), 4000) : null;
+    const query = sb.from(SB_TABLE).select('id').limit(1);
+    if(ctrl) query.abortSignal(ctrl.signal);
+    const { error } = await query;
+    if(tid) clearTimeout(tid);
+    return !error;
+  }catch(e){
+    console.log('[GT] Supabase probe failed — staying offline');
+    return false;
+  }
+}
+ 
+// ── Sync status dot (sidebar) ──
+let _syncStatus = 'local';
+function _setSyncStatus(s){
+  _syncStatus = s;
+  const dot = document.getElementById('sb-sync-dot');
+  const lbl = document.getElementById('sb-sync-lbl');
+  if(!dot) return;
+  const map = {
+    local:   {c:'var(--text3)',  t:'Offline',            l:'Offline'},
+    syncing: {c:'var(--yellow)', t:'Sincronizando…',     l:'Sincronizando…'},
+    synced:  {c:'var(--green)',  t:'Sincronizado ✓',     l:'Supabase ✓'},
+    error:   {c:'var(--red)',    t:'Erro ao sincronizar', l:'Erro de sync'},
+  };
+  const cfg = map[s]||map.local;
+  dot.style.background = cfg.c;
+  dot.title = cfg.t;
+  if(lbl){ lbl.textContent = cfg.l; lbl.style.color = cfg.c; }
+}
+ 
+// ══════════════════════════════════════════
 // STORAGE LAYER
-// ── New key: "gameTrackerData" (multi-user ready)
-// ── Legacy key: "gt_v4" / "games" (auto-migrated)
+// ── "gameTrackerData" localStorage (always written)
+// ── Supabase (written when online, read on first load)
 // ══════════════════════════════════════════
  
-const STORAGE_KEY = 'gameTrackerData'; // ← new canonical key (never changes)
-const LEGACY_KEYS = ['gt_v4', 'games']; // ← old keys to migrate from
+const STORAGE_KEY = 'gameTrackerData';
+const LEGACY_KEYS = ['gt_v4', 'games'];
  
-// ── Future auth hook: replace 'local-user' with real UID at login ──
-// To integrate Supabase/Firebase, set this before initApp():
-//   currentUserId = auth.user.id;
+// ── User context — replaced by real UID at login ──
 let currentUserId = 'local-user';
  
-// ── Probe storage availability ──
+// ── Probe local storages ──
 function hasArtifactStorage(){
   return typeof window.storage!=='undefined'&&window.storage!==null&&typeof window.storage.set==='function';
 }
@@ -906,115 +989,158 @@ function hasLocalStorage(){
   catch(e){return false;}
 }
  
-// ── In-memory fallback (sandboxed / no-storage environments) ──
-let _memStore={};
+let _memStore = {};
  
-// ── Canonical data envelope ──
-// Shape: { user_id: string, games: GameEntry[], version: number, updatedAt: string }
+// ── Canonical envelope ──
 function makeEnvelope(gamesArray){
-  return {
-    user_id:   currentUserId,
-    games:     gamesArray,
-    version:   3,
-    updatedAt: new Date().toISOString(),
-  };
+  return { user_id:currentUserId, games:gamesArray, version:3, updatedAt:new Date().toISOString() };
 }
  
-// ── Save: write envelope to all available storages ──
-function saveData(gamesArray){
-  const envelope = makeEnvelope(gamesArray);
-  const json = JSON.stringify(envelope);
- 
-  if(hasArtifactStorage()){
-    try{
-      window.storage.set(STORAGE_KEY, json)
-        .catch(e=>console.warn('[GT] artifact storage write failed:', e));
-    }catch(e){console.warn('[GT] artifact storage error:', e);}
-  }
- 
-  if(hasLocalStorage()){
-    try{
-      localStorage.setItem(STORAGE_KEY, json);
-    }catch(e){console.error('[GT] localStorage write failed:', e);}
-  }
- 
-  _memStore[STORAGE_KEY] = json; // always keep in memory
-}
- 
-// ── Read raw JSON string from any available storage ──
-function _readRaw(){
-  // 1. localStorage (sync, most reliable)
-  if(hasLocalStorage()){
-    try{
-      const v = localStorage.getItem(STORAGE_KEY);
-      if(v) return {src:'localStorage', raw:v};
-    }catch(e){}
-  }
-  // 2. In-memory fallback
-  if(_memStore[STORAGE_KEY]) return {src:'memory', raw:_memStore[STORAGE_KEY]};
-  return null;
-}
- 
-// ── Extract games array from whatever shape the stored JSON has ──
+// ── Extract games array from any envelope shape ──
 function _extractGames(parsed){
-  // New envelope: { user_id, games: [...] }
   if(parsed&&!Array.isArray(parsed)&&Array.isArray(parsed.games)) return parsed.games;
-  // Bare array (old gt_v4 format)
   if(Array.isArray(parsed)) return parsed;
   return null;
 }
  
-// ── Load data with automatic migration from legacy keys ──
+// ── Write to localStorage + artifact storage (sync, always) ──
+function _saveLocal(gamesArray){
+  const json = JSON.stringify(makeEnvelope(gamesArray));
+  if(hasArtifactStorage()){
+    try{ window.storage.set(STORAGE_KEY,json).catch(e=>console.log('[GT] artifact write:',e)); }
+    catch(e){}
+  }
+  if(hasLocalStorage()){
+    try{ localStorage.setItem(STORAGE_KEY,json); }
+    catch(e){ console.log('[GT] localStorage write:',e); }
+  }
+  _memStore[STORAGE_KEY] = json;
+}
+ 
+// ── Write rows to Supabase (async, fire-and-forget with fallback) ──
+async function _saveRemote(gamesArray){
+  const sb = getSbClient();
+  const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+  if(!sb || !isOnline) return;
+  _setSyncStatus('syncing');
+  try{
+    // Upsert all games for this user_id
+    const rows = gamesArray.map(g=>({
+      id:            String(g.id),
+      user_id:       currentUserId,
+      name:          g.name||'',
+      platform_main: g.platformMain||'',
+      platforms:     JSON.stringify(g.platforms||[]),
+      status:        g.status||'Backlog',
+      genre:         g.genre||'',
+      year:          g.year||null,
+      score:         g.score!==''?parseFloat(g.score):null,
+      difficulty:    g.diff||null,
+      hours_played:  g.hours?parseFloat(g.hours):null,
+      avg_time:      g.avgtime?parseFloat(g.avgtime):null,
+      date_start:    g.dateStart||null,
+      date_end:      g.dateEnd||null,
+      notes:         g.obs||'',
+      cover_url:     g.cover||'',
+      rawg_id:       g.rawgId||null,
+      rawg_release:  g.rawgRelease||null,
+      rawg_genres:   g.rawgGenres||'',
+      payload:       JSON.stringify(g), // full object for easy restore
+      updated_at:    new Date().toISOString(),
+    }));
+    const { error } = await sb.from(SB_TABLE).upsert(rows, {onConflict:'id'});
+    if(error){ console.log('[GT] Supabase upsert error:', error.message); _setSyncStatus('error'); }
+    else { _setSyncStatus('synced'); }
+  }catch(e){ console.log('[GT] Supabase save exception:', e); _setSyncStatus('error'); }
+}
+ 
+// ── PUBLIC: saveData() — always local, async remote ──
+function saveData(gamesArray){
+  _saveLocal(gamesArray);
+  _saveRemote(gamesArray); // async, does not block UI
+}
+ 
+// ── Load from localStorage (sync) ──
+function _readRaw(){
+  if(hasLocalStorage()){
+    try{ const v=localStorage.getItem(STORAGE_KEY); if(v) return {src:'localStorage',raw:v}; }catch(e){}
+  }
+  if(_memStore[STORAGE_KEY]) return {src:'memory',raw:_memStore[STORAGE_KEY]};
+  return null;
+}
+ 
 function loadData(){
-  // ── Try new key first ──
   const found = _readRaw();
   if(found){
     try{
       const parsed = JSON.parse(found.raw);
       const arr = _extractGames(parsed);
       if(arr) return arr;
-    }catch(e){console.warn('[GT] parse error on main key:', e);}
+    }catch(e){console.log('[GT] parse error on main key:',e);}
   }
- 
-  // ── Migration: try legacy keys ──
+  // Legacy migration
   if(hasLocalStorage()){
-    for(const legacyKey of LEGACY_KEYS){
+    for(const lk of LEGACY_KEYS){
       try{
-        const raw = localStorage.getItem(legacyKey);
+        const raw=localStorage.getItem(lk);
         if(!raw) continue;
-        const parsed = JSON.parse(raw);
-        const arr = _extractGames(parsed);
-        if(arr && arr.length){
-          console.info(`[GT] Migrating ${arr.length} games from legacy key "${legacyKey}" → "${STORAGE_KEY}"`);
-          // Save under new key immediately
+        const arr=_extractGames(JSON.parse(raw));
+        if(arr&&arr.length){
+          console.log(`[GT] Migrating ${arr.length} games from "${lk}" → "${STORAGE_KEY}"`);
           saveData(arr);
-          // Keep legacy key for one session, then clean up silently
-          setTimeout(()=>{
-            try{localStorage.removeItem(legacyKey);}catch(e){}
-          }, 5000);
+          setTimeout(()=>{try{localStorage.removeItem(lk);}catch(e){}},5000);
           return arr;
         }
-      }catch(e){console.warn(`[GT] migration error for key "${legacyKey}":`, e);}
+      }catch(e){}
     }
   }
- 
-  return []; // fresh start
+  return [];
 }
  
-// ── Normalize individual game entries (handles all historical formats) ──
+// ── Load from Supabase and merge if remote is newer/larger ──
+async function loadFromSupabase(){
+  const sb = getSbClient();
+  const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+  if(!sb || !isOnline) return;
+  try{
+    _setSyncStatus('syncing');
+    const { data, error } = await sb
+      .from(SB_TABLE)
+      .select('payload,updated_at')
+      .eq('user_id', currentUserId)
+      .order('updated_at',{ascending:false});
+    if(error){ console.log('[GT] Supabase load error:',error.message); _setSyncStatus('error'); return; }
+    if(!data||!data.length){ _setSyncStatus('synced'); return; }
+ 
+    const remote = data
+      .map(row=>{ try{ return JSON.parse(row.payload); }catch(e){ return null; } })
+      .filter(Boolean)
+      .map(normalizeGame)
+      .filter(Boolean);
+ 
+    if(remote.length > 0 && remote.length >= games.length){
+      games = remote;
+      _saveLocal(games); // sync back to localStorage
+      buildSb(); updateQuickStats(); updateXPUI(); renderDash();
+      console.log(`[GT] Loaded ${games.length} games from Supabase`);
+    }
+    _setSyncStatus('synced');
+  }catch(e){ console.log('[GT] Supabase load exception:',e); _setSyncStatus('error'); }
+}
+ 
+// ── Normalize individual game entries ──
 function normalizeGame(g){
   if(!g||typeof g!=='object') return null;
-  if(!g.platformMain&&g.platform)  g.platformMain = g.platform;
+  if(!g.platformMain&&g.platform) g.platformMain=g.platform;
   if(!Array.isArray(g.platforms)||!g.platforms.length)
-    g.platforms = g.platformMain ? [g.platformMain] : [];
-  g.platforms = g.platforms.filter(p=>typeof p==='string'&&p.length>0);
+    g.platforms=g.platformMain?[g.platformMain]:[];
+  g.platforms=g.platforms.filter(p=>typeof p==='string'&&p.length>0);
   if(g.status==='Lista de Desejos') g.status='Desejos';
   if(typeof g.score==='undefined')  g.score='';
-  // ── RAWG / future auth fields (prepared, not used yet) ──
-  if(!g.rawgId)      g.rawgId      = g.rawgId      || '';
-  if(!g.rawgRelease) g.rawgRelease = g.rawgRelease || '';
-  if(!g.rawgGenres)  g.rawgGenres  = g.rawgGenres  || '';
-  if(!g.user_id)     g.user_id     = currentUserId;
+  if(!g.rawgId)      g.rawgId='';
+  if(!g.rawgRelease) g.rawgRelease='';
+  if(!g.rawgGenres)  g.rawgGenres='';
+  if(!g.user_id)     g.user_id=currentUserId;
   return g;
 }
  
@@ -1022,20 +1148,18 @@ function normalizeGame(g){
 // STATE
 // ══════════════════════════════════════════
 let games = loadData().map(normalizeGame).filter(Boolean);
-saveData(games); // persist normalized + migrated data immediately
+saveData(games);
  
-let editId       = null;
-let curPlat      = null;
-let curPlatFilter= 'Todos';
-let curLibFilter = {status:'Todos'};
-let sbCollapsed  = false;
+let editId        = null;
+let curPlat       = null;
+let curPlatFilter = 'Todos';
+let curLibFilter  = {status:'Todos'};
+let sbCollapsed   = false;
  
-// ── persist() is the single write-point for all game mutations ──
 function persist(){ saveData(games); }
  
-// ── Future auth integration point ──
-// Call this after successful login to switch storage context:
-// function switchUser(newUserId){ currentUserId = newUserId; games = loadData()...; initApp(); }
+// ── Future auth: call after login ──
+// async function switchUser(uid){ currentUserId=uid; games=loadData().map(normalizeGame).filter(Boolean); await loadFromSupabase(); initApp(); }
  
 // ══════════════════════════════════════════
 // XP & GAMIFICATION
@@ -1748,7 +1872,7 @@ function importBackup(input){
       parsed=JSON.parse(e.target.result);
     }catch(err){
       toast('❌ JSON inválido. O arquivo está corrompido ou não é um backup válido.');
-      console.error('JSON parse error:',err);
+      console.log('JSON parse error:',err);
       return;
     }
  
@@ -1833,26 +1957,57 @@ function initApp(){
   updateQuickStats();
   updateXPUI();
   renderDash();
+  _setSyncStatus(_syncStatus); // render initial dot
 }
  
 // ── Async artifact storage bootstrap ──
-// localStorage is already loaded synchronously above; this handles
-// the artifact window.storage API which is async-only.
 if(hasArtifactStorage()){
   window.storage.get(STORAGE_KEY).then(result=>{
     if(result&&result.value){
       try{
-        const parsed = JSON.parse(result.value);
-        const arr = _extractGames(parsed);
+        const parsed=JSON.parse(result.value);
+        const arr=_extractGames(parsed);
         if(Array.isArray(arr)&&arr.length>games.length){
-          // Artifact storage has more data — use it and sync to localStorage
-          games = arr.map(normalizeGame).filter(Boolean);
-          saveData(games);
-          initApp(); // re-render with fresh data
+          games=arr.map(normalizeGame).filter(Boolean);
+          _saveLocal(games);
+          initApp();
         }
-      }catch(e){console.warn('[GT] artifact async load error:', e);}
+      }catch(e){console.log('[GT] artifact async load error:',e);}
     }
-  }).catch(e=>console.warn('[GT] artifact storage get failed:', e));
+  }).catch(e=>console.log('[GT] artifact storage get failed:',e));
+}
+ 
+// ── Supabase async bootstrap ──
+// Wrapped in setTimeout so the UI renders first, then we attempt remote sync.
+// All errors are caught — never interrupts offline use.
+if(typeof window !== 'undefined'){
+  setTimeout(async()=>{
+    try{
+      const available = await isSupabaseAvailable();
+      if(available){
+        console.log('[GT] Supabase reachable — syncing remote data');
+        await loadFromSupabase();
+      } else {
+        console.log('[GT] Supabase not available — offline mode');
+        _setSyncStatus('local');
+      }
+    }catch(e){
+      console.log('[GT] Supabase bootstrap error — offline fallback:', e && e.message ? e.message : '');
+      _setSyncStatus('local');
+    }
+  }, 800); // small delay so initApp() renders before any async work
+ 
+  // Online / offline event listeners (safe registration)
+  window.addEventListener('online', async()=>{
+    console.log('[GT] Connection restored — syncing to Supabase');
+    toast('🌐 Conexão restaurada — sincronizando…');
+    try{ await _saveRemote(games); }catch(e){ console.log('[GT] Re-sync error:', e && e.message ? e.message : ''); }
+  });
+  window.addEventListener('offline',()=>{
+    console.log('[GT] Connection lost — offline mode active');
+    _setSyncStatus('local');
+    toast('📴 Sem conexão — salvando localmente');
+  });
 }
  
 initApp();
