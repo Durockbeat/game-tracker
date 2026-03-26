@@ -1047,11 +1047,11 @@ function getSbClient(){
     if(typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function'){
       _sbClient = window.supabase.createClient(SB_URL, SB_KEY, {
         auth: {
-          persistSession:   false, // disables BroadcastChannel → fixes "Headers could not be cloned"
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
+          persistSession:     false, // disables BroadcastChannel → fixes "Headers could not be cloned"
+          autoRefreshToken:   true,
+          detectSessionInUrl: true,  // must be true for email confirm + OAuth hash processing
         },
-        realtime: { params: { eventsPerSecond: 0 } }, // no realtime subscriptions
+        realtime: { params: { eventsPerSecond: 0 } },
       });
       _sbReady = true;
       console.log('[GT] Supabase client ready');
@@ -2328,52 +2328,79 @@ if(hasArtifactStorage()){
 }
  
 // ── Auth bootstrap: runs after page load ──
-// Start with login screen visible. _applyAuthState() decides when to reveal the app.
+// Handles: existing session (page refresh) · email confirmation · Google OAuth redirect
 if(typeof window !== 'undefined'){
-  _showLoginScreen(); // default: show login until auth is confirmed
+  _showLoginScreen(); // default: show login until a valid session is confirmed
  
   setTimeout(async()=>{
     try{
       const sb = getSbClient();
- 
       if(!sb){
         console.log('[GT] Supabase not available — showing login screen');
         _setSyncStatus('local');
         return;
       }
  
-      let _sessionHandled = false; // prevent double-handling getSession + onAuthStateChange
+      let _sessionHandled = false;
  
-      // ── Register listener FIRST ──
-      // onAuthStateChange fires for: INITIAL_SESSION, SIGNED_IN (incl. OAuth redirect),
-      // TOKEN_REFRESHED, SIGNED_OUT. This is the reliable entry point for OAuth returns.
+      // ── Helper: activate app with a confirmed session ──
+      async function _activateSession(session, label){
+        if(_sessionHandled) return;
+        _sessionHandled = true;
+        console.log('[GT] auth ready', label);
+        _applyAuthState(session);
+        _setSyncStatus('syncing');
+        // Clean auth tokens from URL so refresh doesn't re-process them
+        if(window.location.hash && window.location.hash.includes('access_token')){
+          try{
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
+          }catch(e){}
+        }
+        await loadFromSupabase();
+      }
+ 
+      // ── Step 1: Explicitly parse URL hash for email confirm & OAuth tokens ──
+      // Supabase sends: #access_token=...&refresh_token=...&type=signup|recovery|...
+      const hash = window.location.hash;
+      if(hash && hash.includes('access_token')){
+        try{
+          const params = new URLSearchParams(hash.replace(/^#/, ''));
+          const access_token  = params.get('access_token');
+          const refresh_token = params.get('refresh_token');
+          const type          = params.get('type'); // signup | recovery | magiclink
+          console.log('[GT] URL hash detected, type:', type);
+          if(access_token && refresh_token){
+            const { data, error } = await sb.auth.setSession({ access_token, refresh_token });
+            if(!error && data.session){
+              await _activateSession(data.session, 'email-confirm type=' + (type||'?'));
+              return;
+            } else {
+              console.log('[GT] setSession from hash failed:', error && error.message);
+            }
+          }
+        }catch(hashErr){
+          console.log('[GT] hash parse error:', hashErr && hashErr.message ? hashErr.message : hashErr);
+        }
+      }
+ 
+      // ── Step 2: onAuthStateChange — fires for OAuth, token refresh, INITIAL_SESSION ──
       sb.auth.onAuthStateChange(async(event, session)=>{
         if(session && session.user){
-          if(!_sessionHandled){
-            _sessionHandled = true;
-            console.log('[GT] auth ready', event);
-            _applyAuthState(session);
-            _setSyncStatus('syncing');
-            await loadFromSupabase();
-          }
+          await _activateSession(session, event);
         } else if(event === 'SIGNED_OUT'){
           _sessionHandled = false;
           _applyAuthState(null);
         }
       });
  
-      // ── Then check for existing session (returning user, page refresh) ──
-      // Give onAuthStateChange a tick to process the OAuth hash from the URL first.
-      await new Promise(r=>setTimeout(r, 100));
+      // ── Step 3: getSession() — fallback for returning users (page refresh) ──
+      // Wait a tick so onAuthStateChange can fire INITIAL_SESSION first if available.
+      await new Promise(r=>setTimeout(r, 150));
       if(!_sessionHandled){
         const { data: { session } } = await sb.auth.getSession();
-        if(session && session.user && !_sessionHandled){
-          _sessionHandled = true;
-          console.log('[GT] auth ready existing session');
-          _applyAuthState(session);
-          _setSyncStatus('syncing');
-          await loadFromSupabase();
-        } else if(!_sessionHandled){
+        if(session && session.user){
+          await _activateSession(session, 'existing-session');
+        } else {
           console.log('[GT] no session — login screen shown');
           _setSyncStatus('local');
         }
@@ -2383,7 +2410,7 @@ if(typeof window !== 'undefined'){
       console.log('[GT] Auth bootstrap error:', e && e.message ? e.message : '');
       _setSyncStatus('local');
     }
-  }, 300); // short delay lets Supabase client process OAuth hash before we query
+  }, 200); // minimal delay — just enough for DOM + Supabase SDK to be ready
  
   window.addEventListener('online', async()=>{
     toast('🌐 Conexão restaurada — sincronizando…');
