@@ -80,7 +80,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
  
 /* ═══ QUICK STATS BAR ═══ */
 .qstats{display:grid;gap:0;border-bottom:1px solid var(--border);background:var(--sidebar);flex-shrink:0}
-.qstats-7{grid-template-columns:repeat(7,1fr)}
+.qstats-7{grid-template-columns:repeat(8,1fr)}
 .qstats-4{grid-template-columns:repeat(4,1fr)}
 .qstat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;border-right:1px solid var(--border);cursor:default;transition:background var(--tr)}
 .qstat:last-child{border-right:none}
@@ -117,6 +117,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .gb-Jogando{background:rgba(167,139,250,.15);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
 .gb-Backlog{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
 .gb-Desejos{background:rgba(244,114,182,.12);color:var(--pink);border:1px solid rgba(244,114,182,.2)}
+.gb-Joguei{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.22)}
 .gc-score{position:absolute;top:8px;right:8px;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;background:rgba(10,10,12,.8);backdrop-filter:blur(4px);padding:2px 7px;border-radius:100px;color:var(--accent)}
 .gc-actions{position:absolute;top:8px;left:8px;display:flex;gap:4px;opacity:0;transition:opacity var(--tr)}
 .gc:hover .gc-actions{opacity:1}
@@ -563,7 +564,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   #sidebar.col{width:var(--swc) !important;min-width:var(--swc) !important}
   .nf-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .nf-grid.large{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
-  .qstats-7{grid-template-columns:repeat(7,1fr)}
+  .qstats-7{grid-template-columns:repeat(8,1fr)}
   .qstats-4{grid-template-columns:repeat(4,1fr)}
   #main{
     width:0 !important;
@@ -704,6 +705,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="qstat"><div class="qsv" id="qs-jog" style="color:var(--purple)">0</div><div class="qsl">Jogando</div></div>
       <div class="qstat"><div class="qsv" id="qs-bkl" style="color:var(--blue)">0</div><div class="qsl">Backlog</div></div>
       <div class="qstat"><div class="qsv" id="qs-wish" style="color:var(--pink)">0</div><div class="qsl">Desejos</div></div>
+      <div class="qstat"><div class="qsv" id="qs-joguei" style="color:#34d399">0</div><div class="qsl">Joguei</div></div>
       <div class="qstat"><div class="qsv" id="qs-hrs" style="color:var(--orange)">0h</div><div class="qsl">Jogadas</div></div>
       <div class="qstat"><div class="qsv" id="qs-backh" style="color:var(--yellow)">0h</div><div class="qsl">Backlog Est.</div></div>
     </div>
@@ -736,6 +738,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="fbtn active" onclick="setLibFilter('status','Todos',this)">Todos</button>
       <button class="fbtn" onclick="setLibFilter('status','Jogando',this)">Jogando</button>
       <button class="fbtn" onclick="setLibFilter('status','Finalizado',this)">Finalizados</button>
+      <button class="fbtn" onclick="setLibFilter('status','Joguei',this)">Joguei</button>
       <button class="fbtn" onclick="setLibFilter('status','Backlog',this)">Backlog</button>
       <button class="fbtn" onclick="setLibFilter('status','Desejos',this)">Desejos</button>
     </div>
@@ -817,6 +820,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="fbtn active" onclick="setPlatFilter('Todos',this)">Todos</button>
       <button class="fbtn" onclick="setPlatFilter('Jogando',this)">Jogando</button>
       <button class="fbtn" onclick="setPlatFilter('Finalizado',this)">Finalizados</button>
+      <button class="fbtn" onclick="setPlatFilter('Joguei',this)">Joguei</button>
       <button class="fbtn" onclick="setPlatFilter('Backlog',this)">Backlog</button>
       <button class="fbtn" onclick="setPlatFilter('Desejos',this)">Desejos</button>
     </div>
@@ -861,6 +865,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
             <option value="Backlog">Backlog</option>
             <option value="Jogando">Jogando</option>
             <option value="Finalizado">Finalizado</option>
+            <option value="Joguei">Joguei (Zerado/Desistido)</option>
             <option value="Desejos">Lista de Desejos</option>
           </select>
         </div>
@@ -1338,6 +1343,7 @@ function updateQuickStats(){
   const jog=games.filter(g=>g.status==='Jogando').length;
   const bkl=games.filter(g=>g.status==='Backlog').length;
   const wish=games.filter(g=>g.status==='Desejos').length;
+  const joguei=games.filter(g=>g.status==='Joguei').length;
   // Unique by name (de-duplicate cross-platform)
   const unique=new Set(games.map(g=>g.name.toLowerCase().trim())).size;
   const totalH=games.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
@@ -1348,6 +1354,8 @@ function updateQuickStats(){
   document.getElementById('qs-jog').textContent=jog;
   document.getElementById('qs-bkl').textContent=bkl;
   document.getElementById('qs-wish').textContent=wish;
+  const jogueiEl=document.getElementById('qs-joguei');
+  if(jogueiEl) jogueiEl.textContent=joguei;
   document.getElementById('qs-hrs').textContent=totalH>0?Math.round(totalH)+'h':'0h';
   document.getElementById('qs-backh').textContent=backlogH>0?Math.round(backlogH)+'h':'—';
   document.getElementById('sb-total').textContent=unique;
@@ -1452,7 +1460,7 @@ function platIcos(g){
 }
 function gameCardHTML(g){
   const hasCover=g.cover&&g.cover.trim();
-  const statusMap={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos'};
+  const statusMap={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos',Joguei:'gb-Joguei'};
   const coverHTML=hasCover
     ?`<img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(g.name)}','${platIcos(g)}')">`
     :`<div class="gc-cover-placeholder"><div class="ph-ico">${platIcos(g)||'🎮'}</div><div class="ph-txt">${esc(g.name)}</div></div>`;
@@ -1503,7 +1511,8 @@ function renderDash(){
   // Donut
   const total=games.length;
   const fin=finished.length,jog=playing.length,bkl=games.filter(g=>g.status==='Backlog').length,wish=games.filter(g=>g.status==='Desejos').length;
-  const sData=[{lbl:'Finalizado',n:fin,c:'var(--accent)'},{lbl:'Jogando',n:jog,c:'var(--purple)'},{lbl:'Backlog',n:bkl,c:'var(--blue)'},{lbl:'Desejos',n:wish,c:'var(--pink)'}].filter(d=>d.n>0);
+  const joguei_d=games.filter(g=>g.status==='Joguei').length;
+  const sData=[{lbl:'Finalizado',n:fin,c:'var(--accent)'},{lbl:'Jogando',n:jog,c:'var(--purple)'},{lbl:'Backlog',n:bkl,c:'var(--blue)'},{lbl:'Desejos',n:wish,c:'var(--pink)'},{lbl:'Joguei',n:joguei_d,c:'#34d399'}].filter(d=>d.n>0);
   if(sData.length){
     const R=50,cx=62,cy=62,sw=13,circ=2*Math.PI*R;let off=0;
     const arcs=sData.map(d=>{const dash=(d.n/total)*circ,gap=circ-dash;const a=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${d.c}" stroke-width="${sw}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-off}" transform="rotate(-90,${cx},${cy})" opacity=".9"/>`;off+=dash;return a;});
@@ -1711,6 +1720,7 @@ function renderPlatPage(pid){
   const fin=pg.filter(g=>g.status==='Finalizado').length;
   const jog=pg.filter(g=>g.status==='Jogando').length;
   const bkl=pg.filter(g=>g.status==='Backlog').length;
+  const joguei_p=pg.filter(g=>g.status==='Joguei').length;
   const rated=pg.filter(g=>g.score!=='');
   const avg=rated.length?(rated.reduce((s,g)=>s+parseFloat(g.score),0)/rated.length).toFixed(1):null;
   const hrs=pg.filter(g=>g.hours).reduce((s,g)=>s+parseFloat(g.hours),0);
@@ -1719,6 +1729,7 @@ function renderPlatPage(pid){
     <span class="chip">${pg.length} jogos</span>
     <span class="chip" style="color:var(--accent)">${fin} finalizados</span>
     <span class="chip" style="color:var(--purple)">${jog} jogando</span>
+    ${joguei_p?`<span class="chip" style="color:#34d399">${joguei_p} joguei</span>`:''}
     <span class="chip">${bkl} backlog</span>
     ${avg?`<span class="chip" style="color:var(--yellow)">★ ${avg}</span>`:''}
     ${hrs>0?`<span class="chip" style="color:var(--orange)">⏱ ${Math.round(hrs)}h</span>`:''}
@@ -1748,7 +1759,7 @@ function renderPlatGrid(pid,allPg){
 function openDetail(id){
   const g=games.find(x=>x.id===id);if(!g)return;
   const cover=g.cover?`<img class="dmodal-cover" src="${esc(g.cover)}" alt="" onerror="this.outerHTML='<div class=dmodal-cover-ph>${platIcos(g)||'🎮'}</div>'">`:`<div class="dmodal-cover-ph">${platIcos(g)||'🎮'}</div>`;
-  const statusCls={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos'};
+  const statusCls={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos',Joguei:'gb-Joguei'};
   document.getElementById('dmodal-content').innerHTML=`
     ${cover}
     <div class="dmodal-body">
@@ -2289,17 +2300,23 @@ async function authLogout(){
   const sb = getSbClient();
   try{
     if(sb) await sb.auth.signOut();
+    // signOut() triggers onAuthStateChange(SIGNED_OUT) which also calls _applyAuthState(null)
+    // but we handle UI here immediately so there's no visible delay
   }catch(e){
     console.log('[GT] signOut error:', e && e.message ? e.message : e);
   }
+  // Reset all auth state
   _offlineMode = false;
   currentUserId = 'local-user';
   _currentSession = null;
+  _handled = false; // allow re-login after logout
   _setSyncStatus('local');
   // Hide user chip
   const chip = document.getElementById('user-chip');
-  if(chip) chip.style.display='none';
+  if(chip) chip.style.display = 'none';
+  // Always show login screen regardless of Supabase response
   _showLoginScreen();
+  console.log('[GT] logout success');
   toast('👋 Saiu da conta');
 }
  
@@ -2339,6 +2356,7 @@ if(hasArtifactStorage()){
 // Handles: page refresh · email confirm · Google OAuth · offline fallback
 // Rule: _showLoginScreen() is the default; _activateSession() reveals the app.
 // ══════════════════════════════════════════
+let _handled = false; // module-scoped so authLogout() can reset it
 (function(){
   if(typeof window === 'undefined') return;
  
@@ -2354,7 +2372,7 @@ if(hasArtifactStorage()){
     return;
   }
  
-  let _handled = false; // deduplicate: only the first valid session triggers _activateSession
+  // _handled is module-scoped (defined below the IIFE) so authLogout can reset it
  
   // ── Central activation: called exactly once per login event ──
   async function _activateSession(session, label){
