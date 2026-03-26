@@ -2264,7 +2264,7 @@ async function lsGoogle(){
   try{
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href },
+      options: { redirectTo: 'https://durockbeat.github.io/game-tracker/' },
     });
     if(error) _lsErr('Erro Google: ' + error.message);
   }catch(e){
@@ -2337,43 +2337,53 @@ if(typeof window !== 'undefined'){
       const sb = getSbClient();
  
       if(!sb){
-        // No Supabase available — stay on login screen, user must click "offline"
         console.log('[GT] Supabase not available — showing login screen');
         _setSyncStatus('local');
         return;
       }
  
-      // Register auth state listener (fires on login, logout, token refresh, OAuth)
+      let _sessionHandled = false; // prevent double-handling getSession + onAuthStateChange
+ 
+      // ── Register listener FIRST ──
+      // onAuthStateChange fires for: INITIAL_SESSION, SIGNED_IN (incl. OAuth redirect),
+      // TOKEN_REFRESHED, SIGNED_OUT. This is the reliable entry point for OAuth returns.
       sb.auth.onAuthStateChange(async(event, session)=>{
         if(session && session.user){
-          console.log('[GT] auth ready', event);
-          _applyAuthState(session);
-          _setSyncStatus('syncing');
-          await loadFromSupabase();
+          if(!_sessionHandled){
+            _sessionHandled = true;
+            console.log('[GT] auth ready', event);
+            _applyAuthState(session);
+            _setSyncStatus('syncing');
+            await loadFromSupabase();
+          }
         } else if(event === 'SIGNED_OUT'){
+          _sessionHandled = false;
           _applyAuthState(null);
         }
       });
  
-      // Check for existing session (e.g. returning user, OAuth redirect)
-      const { data: { session } } = await sb.auth.getSession();
-      if(session && session.user){
-        console.log('[GT] auth ready existing session');
-        _applyAuthState(session);
-        _setSyncStatus('syncing');
-        await loadFromSupabase();
-      } else {
-        // No session found — stay on login screen
-        console.log('[GT] no session — login screen shown');
-        _setSyncStatus('local');
+      // ── Then check for existing session (returning user, page refresh) ──
+      // Give onAuthStateChange a tick to process the OAuth hash from the URL first.
+      await new Promise(r=>setTimeout(r, 100));
+      if(!_sessionHandled){
+        const { data: { session } } = await sb.auth.getSession();
+        if(session && session.user && !_sessionHandled){
+          _sessionHandled = true;
+          console.log('[GT] auth ready existing session');
+          _applyAuthState(session);
+          _setSyncStatus('syncing');
+          await loadFromSupabase();
+        } else if(!_sessionHandled){
+          console.log('[GT] no session — login screen shown');
+          _setSyncStatus('local');
+        }
       }
  
     }catch(e){
       console.log('[GT] Auth bootstrap error:', e && e.message ? e.message : '');
       _setSyncStatus('local');
-      // Stay on login screen — do not auto-fallback to dashboard
     }
-  }, 400);
+  }, 300); // short delay lets Supabase client process OAuth hash before we query
  
   window.addEventListener('online', async()=>{
     toast('🌐 Conexão restaurada — sincronizando…');
