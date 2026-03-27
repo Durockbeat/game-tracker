@@ -82,11 +82,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .qstats{display:grid;gap:0;border-bottom:1px solid var(--border);background:var(--sidebar);flex-shrink:0}
 .qstats-7{grid-template-columns:repeat(8,1fr)}
 .qstats-4{grid-template-columns:repeat(4,1fr)}
-.qstat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;border-right:1px solid var(--border);cursor:default;transition:background var(--tr)}
+.qstat{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 6px;border-right:1px solid var(--border);cursor:default;transition:background var(--tr)}
 .qstat:last-child{border-right:none}
 .qstat:hover{background:var(--surface2)}
-.qsv{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-1px;line-height:1}
-.qsl{font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-top:2px;white-space:nowrap}
+.qsv{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.qsl{font-size:9px;letter-spacing:.6px;text-transform:uppercase;color:var(--text3);margin-top:4px;white-space:nowrap}
  
 /* ═══ SECTION ROWS (Netflix style) ═══ */
 .section-wrap{padding:0 24px 32px}
@@ -340,8 +340,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   /* ── Quick stats: 4 for 7-col, 2 for 4-col ── */
   .qstats-7{grid-template-columns:repeat(4,1fr)}
   .qstats-4{grid-template-columns:repeat(2,1fr)}
-  .qstat{padding:8px 4px}
-  .qsv{font-size:16px;letter-spacing:-.5px}
+  .qstat{padding:10px 3px}
+  .qsv{font-size:18px;letter-spacing:-.8px}
   .qsl{font-size:7px}
  
   /* ── Charts: single column ── */
@@ -668,6 +668,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <span id="sb-sync-dot" title="Offline" style="width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background .3s"></span>
       <span id="sb-sync-lbl" style="font-size:9px;color:var(--text3);letter-spacing:.5px">Offline</span>
     </div>
+    <div id="sb-user-actions" style="display:none;flex-direction:column;gap:4px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+      <button onclick="exportBackup()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;text-align:left;transition:all var(--tr);width:100%" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text2)'">⬇ Exportar backup</button>
+      <button onclick="document.getElementById('import-file-sb').click()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:11px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;text-align:left;transition:all var(--tr);width:100%" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text2)'">⬆ Importar backup</button>
+      <input type="file" id="import-file-sb" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
+      <button onclick="authLogout()" style="background:var(--surface2);border:1px solid rgba(248,113,113,.3);color:var(--red);font-family:'DM Sans',sans-serif;font-size:11px;padding:6px 10px;border-radius:var(--r-sm);cursor:pointer;text-align:left;transition:all var(--tr);width:100%)">↩ Logout</button>
+    </div>
   </div>
 </nav>
  
@@ -692,10 +698,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
           <span class="user-chip-dot"></span>
           <span class="user-chip-email" id="user-chip-email">–</span>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="exportBackup()" title="Exportar backup JSON" data-icon="⬇">⬇ Exportar</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('import-file').click()" title="Importar backup JSON" data-icon="⬆">⬆ Importar</button>
         <input type="file" id="import-file" accept=".json,application/json" style="display:none" onchange="importBackup(this)">
-        <button class="btn btn-ghost btn-sm" onclick="authLogout()" title="Sair da conta" style="color:var(--text2)">Logout</button>
         <button class="btn btn-primary btn-sm" onclick="openModal()">+ Jogo</button>
       </div>
     </div>
@@ -865,7 +868,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
             <option value="Backlog">Backlog</option>
             <option value="Jogando">Jogando</option>
             <option value="Finalizado">Finalizado</option>
-            <option value="Joguei">Joguei (Zerado/Desistido)</option>
+            <option value="Joguei">Joguei</option>
             <option value="Desejos">Lista de Desejos</option>
           </select>
         </div>
@@ -1173,6 +1176,7 @@ async function _saveRemote(gamesArray){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
+  if(!currentUserId || currentUserId === 'local-user') return; // never write cloud for local users
   _setSyncStatus('syncing');
   try{
     // _buildRow is defined above — ensures id is always string and updated_at is fresh
@@ -1242,30 +1246,34 @@ async function loadFromSupabase(){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
+  // Never load from Supabase for local/offline users
+  if(!currentUserId || currentUserId === 'local-user') return;
   try{
     _setSyncStatus('syncing');
     const { data, error } = await sb
       .from(SB_TABLE)
       .select('payload,updated_at')
-      .eq('user_id', currentUserId)
+      .eq('user_id', currentUserId)   // server-side filter
       .order('updated_at',{ascending:false});
     if(error){ console.log('[GT] Supabase load error:',error.message); _setSyncStatus('error'); return; }
     if(!data||!data.length){ _setSyncStatus('synced'); return; }
  
+    // Client-side double-check: discard any row not belonging to currentUserId
     const remote = data
       .map(row=>{ try{ return JSON.parse(row.payload); }catch(e){ return null; } })
       .filter(Boolean)
       .map(normalizeGame)
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter(g => g.user_id === currentUserId); // strict client-side isolation
  
-    if(remote.length > 0 && remote.length >= games.length){
-      games = remote;
-      _saveLocal(games); // sync back to localStorage
-      buildSb(); updateQuickStats(); updateXPUI(); renderDash();
-      console.log(`[GT] Loaded ${games.length} games from Supabase`);
-    }
+    console.log('[GT] user scoped data active — user:', currentUserId, 'rows:', remote.length);
+ 
+    // Replace local games entirely with this user's remote data
+    games = remote;
+    _saveLocal(games);
+    buildSb(); updateQuickStats(); updateXPUI(); renderDash();
     _setSyncStatus('synced');
-  }catch(e){ console.log('[GT] Supabase load exception:',e); _setSyncStatus('error'); }
+  }catch(e){ console.log('[GT] Supabase load exception:',e && e.message ? e.message : e); _setSyncStatus('error'); }
 }
  
 // ── Normalize individual game entries ──
@@ -1914,6 +1922,7 @@ async function _upsertGameToCloud(g){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
+  if(!currentUserId || currentUserId === 'local-user') return; // never write cloud for local users
   try{
     const row = _buildRow(g);
     // Pass row as an ARRAY — Supabase JS v2 upsert is more reliable with arrays.
@@ -1939,6 +1948,7 @@ async function _deleteGameFromCloud(id){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
+  if(!currentUserId || currentUserId === 'local-user') return; // never delete cloud for local users
   try{
     const { error } = await sb
       .from(SB_TABLE)
@@ -2209,25 +2219,28 @@ function _applyAuthState(session){
     const chip      = document.getElementById('user-chip');
     const chipEmail = document.getElementById('user-chip-email');
     if(chip && chipEmail){
-      if(loggedIn){
-        chipEmail.textContent = email;
-        chip.style.display    = 'flex';
-      } else {
-        chipEmail.textContent = 'Offline';
-        chip.style.display    = 'flex';
-      }
+      chipEmail.textContent = loggedIn ? email : 'Offline';
+      chip.style.display    = 'flex';
     }
-    // Sidebar sync label
+    // Sidebar: sync dot + label
     const lbl = document.getElementById('sb-sync-lbl');
     const dot = document.getElementById('sb-sync-dot');
-    if(lbl && loggedIn){
-      lbl.textContent  = email ? email.split('@')[0] : 'Logado';
-      lbl.style.color  = 'var(--green)';
-      if(dot) dot.style.background = 'var(--green)';
+    if(lbl){
+      lbl.textContent = loggedIn ? (email ? email.split('@')[0] : 'Logado') : 'Offline';
+      lbl.style.color = loggedIn ? 'var(--green)' : 'var(--text3)';
     }
+    if(dot) dot.style.background = loggedIn ? 'var(--green)' : 'var(--text3)';
+    // Show sidebar action buttons (Export / Import / Logout)
+    const sbActions = document.getElementById('sb-user-actions');
+    if(sbActions) sbActions.style.display = 'flex';
     initApp();
   } else {
     _showLoginScreen();
+    // Hide sidebar action buttons when logged out
+    const sbActions = document.getElementById('sb-user-actions');
+    if(sbActions) sbActions.style.display = 'none';
+    const chip = document.getElementById('user-chip');
+    if(chip) chip.style.display = 'none';
   }
 }
  
@@ -2311,10 +2324,13 @@ async function authLogout(){
   _currentSession = null;
   _handled = false; // allow re-login after logout
   _setSyncStatus('local');
-  // Hide user chip
+  // Hide user chip and sidebar buttons
   const chip = document.getElementById('user-chip');
   if(chip) chip.style.display = 'none';
-  // Always show login screen regardless of Supabase response
+  const sbActions = document.getElementById('sb-user-actions');
+  if(sbActions) sbActions.style.display = 'none';
+  // Clear games from memory on logout to prevent data leakage to next session
+  games = [];
   _showLoginScreen();
   console.log('[GT] logout success');
   toast('👋 Saiu da conta');
@@ -2383,7 +2399,23 @@ let _handled = false; // module-scoped so authLogout() can reset it
     if(window.location.hash && window.location.hash.includes('access_token')){
       try{ window.history.replaceState(null, '', window.location.pathname + window.location.search); }catch(e){}
     }
-    _applyAuthState(session); // shows app-shell, hides login-screen
+    // Apply session FIRST (sets currentUserId to real UID)
+    _applyAuthState(session);
+    // Clear any games from localStorage that belong to a different user
+    // This prevents cross-account data leakage on the same device
+    const stored = _readRaw();
+    if(stored){
+      try{
+        const parsed = JSON.parse(stored.raw);
+        const arr = _extractGames(parsed);
+        if(Array.isArray(arr) && arr.length && arr.some(g => g.user_id && g.user_id !== currentUserId)){
+          console.log('[GT] clearing cross-user localStorage data');
+          games = [];
+          _saveLocal(games);
+          buildSb(); updateQuickStats(); updateXPUI(); renderDash();
+        }
+      }catch(e){}
+    }
     _setSyncStatus('syncing');
     try{ await loadFromSupabase(); }catch(e){ console.log('[GT] load error:', e && e.message ? e.message : e); }
   }
