@@ -1074,6 +1074,7 @@ function getSbClient(){
         },
         realtime: { params: { eventsPerSecond: 0 } },
       });
+      window.supabaseClient = _sbClient;
       _sbReady = true;
       console.log('[GT] Supabase client ready');
     } else {
