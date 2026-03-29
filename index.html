@@ -1038,16 +1038,6 @@ const SB_URL   = 'https://vtekmlodhursxaxphdjl.supabase.co';
 const SB_KEY   = 'sb_publishable_Tj-y0lyf_3Iv9b4kJ8zhEw_T1vM65Mc';
 const SB_TABLE = 'games';
  
-const RAWG_API_KEY = '7cddca1144c5431780cfcdccde4aebab';
- 
-async function searchGamesRAWG(query) {
-  if (!query || query.length < 3) return [];
-  const response = await fetch(
-    `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=5`
-  );
-  const data = await response.json();
-  return data.results || [];
-}
  
 let _sbClient = null;
 let _sbReady  = false; // true once init succeeded
@@ -2483,6 +2473,17 @@ let _handled = false; // module-scoped so authLogout() can reset it
     toast('📴 Sem conexão — salvando localmente');
   });
 }());
+ 
+const RAWG_API_KEY = '7cddca1144c5431780cfcdccde4aebab';
+ 
+async function searchGamesRAWG(query) {
+  if (!query || query.length < 3) return [];
+  const response = await fetch(
+    `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${encodeURIComponent(query)}&page_size=5`
+  );
+  const data = await response.json();
+  return data.results || [];
+}
 </script>
 </body>
 </html>
