@@ -2298,6 +2298,7 @@ async function lsSubmit(){
     btn.disabled=false;
   }
 }
+window.lsSubmit = lsSubmit;
  
 async function lsGoogle(){
   const sb = getSbClient();
@@ -2312,6 +2313,7 @@ async function lsGoogle(){
     console.log('[GT] Google OAuth error:', e && e.message ? e.message : e);
   }
 }
+window.lsGoogle = lsGoogle;
  
  
 async function authLogout(){
