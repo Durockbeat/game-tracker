@@ -2010,9 +2010,8 @@ function saveGame(){
     toast('🎮 Jogo adicionado!');
   }
   // 1. Always save locally first (sync, instant)
+  // 2. persist() also triggers _saveRemote — single cloud path, no duplicates
   persist();
-  // 2. Attempt cloud upsert for this specific game (async, silent fallback)
-  _upsertGameToCloud(g);
   closeModal();buildSb();updateQuickStats();updateXPUI();
   // Check new achievements
   const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
