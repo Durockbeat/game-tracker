@@ -2440,7 +2440,7 @@ let _handled = false; // module-scoped so authLogout() can reset it
   // ── Step 2: onAuthStateChange — the primary listener for ALL session events ──
   // With persistSession:true, Supabase fires INITIAL_SESSION on page load
   // if a stored session exists — this handles the F5/refresh case.
-  sb.auth.onAuthStateChange(async(event, session)=>{
+  getSbClient().auth.onAuthStateChange(async(event, session)=>{
     if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED'){
       if(session && session.user){
         await _activateSession(session, event);
