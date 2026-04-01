@@ -2325,28 +2325,10 @@ window.authSubmit = lsSubmit;
  
 async function authLogout(){
   const sb = getSbClient();
-  try{
-    if(sb) await sb.auth.signOut();
-    // signOut() triggers onAuthStateChange(SIGNED_OUT) which also calls _applyAuthState(null)
-    // but we handle UI here immediately so there's no visible delay
-  }catch(e){
-    console.log('[GT] signOut error:', e && e.message ? e.message : e);
+  if(sb){
+    await sb.auth.signOut();
   }
-  // Reset all auth state
-  currentUserId = 'local-user';
-  _currentSession = null;
-  _handled = false; // allow re-login after logout
-  _setSyncStatus('local');
-  // Hide user chip and sidebar buttons
-  const chip = document.getElementById('user-chip');
-  if(chip) chip.style.display = 'none';
-  const sbActions = document.getElementById('sb-user-actions');
-  if(sbActions) sbActions.style.display = 'none';
-  // Clear games from memory on logout to prevent data leakage to next session
-  games = [];
-  _showLoginScreen();
-  console.log('[GT] logout success');
-  toast('👋 Saiu da conta');
+  location.reload();
 }
  
 // ══════════════════════════════════════════
@@ -2588,4 +2570,5 @@ async function handleLoginSubmit() {
 </script>
 </body>
 </html>
+ 
  
