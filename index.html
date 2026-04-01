@@ -2447,7 +2447,9 @@ let _handled = false; // module-scoped so authLogout() can reset it
       }
     } else if(event === 'SIGNED_OUT'){
       _handled = false;
-      _applyAuthState(null); // shows login screen
+      currentUserId = null;
+      _setSyncStatus('offline');
+      _showLoginScreen();
     }
   });
  
