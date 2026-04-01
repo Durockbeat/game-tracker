@@ -2450,6 +2450,7 @@ let _handled = false; // module-scoped so authLogout() can reset it
       currentUserId = null;
       _setSyncStatus('offline');
       _showLoginScreen();
+      return;
     }
   });
  
