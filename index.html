@@ -1256,9 +1256,9 @@ function loadData(){
 async function loadFromSupabase(){
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
-  if(!sb || !isOnline) return;
+  if(!sb || !isOnline){ _setSyncStatus('synced'); return; }
   // Never load from Supabase for local/offline users
-  if(!currentUserId || currentUserId === 'local-user') return;
+  if(!currentUserId || currentUserId === 'local-user'){ _setSyncStatus('synced'); return; }
   try{
     _setSyncStatus('syncing');
     const { data, error } = await sb
