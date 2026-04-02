@@ -1282,9 +1282,23 @@ async function loadFromSupabase(){
     // Replace local games entirely with this user's remote data
     games = remote;
     _saveLocal(games);
+    buildPlatformIndex();
     buildSb(); updateQuickStats(); updateXPUI(); renderDash();
     _setSyncStatus('synced');
   }catch(e){ console.log('[GT] Supabase load exception:',e && e.message ? e.message : e); _setSyncStatus('error'); }
+}
+ 
+window.buildPlatformIndex = function(){
+  const set = new Set();
+  games.forEach(g=>{
+    if(!g.platforms) return;
+    String(g.platforms)
+      .split(',')
+      .map(p => p.trim())
+      .filter(Boolean)
+      .forEach(p => set.add(p));
+  });
+  window.platformIndex = Array.from(set).sort();
 }
  
 // ── Normalize individual game entries ──
