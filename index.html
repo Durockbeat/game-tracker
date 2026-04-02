@@ -2592,14 +2592,24 @@ window.loadBrowsePlatforms = async function(){
     container.style.display = 'grid';
     container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
     container.style.gap = '16px';
+    container.addEventListener('click', (event) => {
+      const card = event.target.closest('.browse-platform-card');
+      if(!card) return;
+      const platformId = card.dataset.platformId;
+      if(!platformId) return;
+      openPlatformCatalog(Number(platformId));
+    });
     data.results.forEach(p=>{
       const el = document.createElement('div');
       el.className = 'browse-platform-card';
       el.classList.add('platform-card');
+      el.dataset.platformId = p.id;
       el.innerText = p.name;
       el.onclick = ()=>{
         openPlatformCatalog(p.id, p.name);
       };
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => openPlatformCatalog(p.id));
       container.appendChild(el);
     });
   }catch(e){
