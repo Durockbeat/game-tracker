@@ -2579,45 +2579,39 @@ window.openBrowseGames = function(){
 }
  
 window.loadBrowsePlatforms = async function(){
+  console.log("DEBUG: loadBrowsePlatforms EXECUTOU");
   const container = document.getElementById('browseGamesView');
   if(!container) return;
   container.innerHTML = 'Carregando plataformas...';
+  container.style.display = 'block';
+  container.style.gridTemplateColumns = '';
+  container.style.gap = '';
   try{
     const res = await fetch(
       'https://api.rawg.io/api/platforms?key=' + RAWG_API_KEY
     );
     const data = await res.json();
     if(!data.results) return;
-    container.innerHTML = '';
-    container.style.display = 'grid';
-    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
-    container.style.gap = '16px';
-    container.addEventListener('click', (event) => {
-      const card = event.target.closest('.browse-platform-card');
-      if(!card) return;
-      const platformId = card.dataset.platformId;
-      if(!platformId) return;
-      openPlatformCatalog(Number(platformId));
-    });
-    data.results.forEach(p=>{
-      const el = document.createElement('div');
-      el.className = 'browse-platform-card';
-      el.classList.add('platform-card');
-      el.dataset.platformId = p.id;
-      el.innerText = p.name;
-      el.onclick = ()=>{
-        openPlatformCatalog(p.id, p.name);
-      };
-      el.style.cursor = 'pointer';
-      el.addEventListener('click', () => openPlatformCatalog(p.id));
-      container.appendChild(el);
+    container.innerHTML = `
+      <div style="display:flex; justify-content:center; margin:24px 0;">
+        <select id="platformSelect" style="padding:10px 16px; font-size:16px; border-radius:8px;">
+          <option value="">Selecionar plataforma...</option>
+        </select>
+      </div>
+    `;
+    const select = document.getElementById('platformSelect');
+    data.results.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id;
+      option.textContent = p.name;
+      select.appendChild(option);
     });
   }catch(e){
     container.innerHTML = 'Erro ao carregar plataformas';
   }
 }
  
-function openPlatformCatalog(platformId) {
+window.openPlatformCatalog = function(platformId) {
   selectedBrowsePlatformId = platformId;
   const platforms = document.getElementById('browsePlatformsContainer');
   if(platforms) platforms.style.display = 'none';
