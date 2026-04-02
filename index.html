@@ -1919,7 +1919,7 @@ function _buildRow(g){
     platform:     g.platformMain || '',
     status:       g.status       || 'Backlog',
     release_year: g.year ? (parseInt(g.year, 10) || null) : null,
-    cover_url:    g.cover        || '',
+    cover_url:    g.cover || g.cover_url || g.background_image || '',
     platforms:    (Array.isArray(g.platforms) ? g.platforms : []).join(', '),
     score:        (g.score !== '' && g.score != null) ? (parseFloat(g.score) || null) : null,
     difficulty:   g.diff         || null,
