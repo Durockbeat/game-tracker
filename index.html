@@ -1920,7 +1920,9 @@ function _buildRow(g){
     status:       g.status       || 'Backlog',
     release_year: g.year ? (parseInt(g.year, 10) || null) : null,
     cover_url:    g.cover || g.cover_url || g.background_image || '',
-    platforms:    (Array.isArray(g.platforms) ? g.platforms : []).join(', '),
+    platforms:    Array.isArray(g.platforms)
+      ? g.platforms.map(p => p.platform?.name || p.name).filter(Boolean).join(', ')
+      : (g.platforms || ''),
     score:        (g.score !== '' && g.score != null) ? (parseFloat(g.score) || null) : null,
     difficulty:   g.diff         || null,
     hours_played: g.hours        ? (parseFloat(g.hours)   || null) : null,
@@ -2450,6 +2452,11 @@ let _handled = false; // module-scoped so authLogout() can reset it
   // With persistSession:true, Supabase fires INITIAL_SESSION on page load
   // if a stored session exists — this handles the F5/refresh case.
   getSbClient().auth.onAuthStateChange(async(event, session)=>{
+    if(event === 'INITIAL_SESSION' && !session){
+      _setSyncStatus('offline');
+      _showLoginScreen();
+      return;
+    }
     if(event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED'){
       if(session && session.user){
         await _activateSession(session, event);
