@@ -2589,6 +2589,9 @@ window.loadBrowsePlatforms = async function(){
     const data = await res.json();
     if(!data.results) return;
     container.innerHTML = '';
+    container.style.display = 'grid';
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
+    container.style.gap = '16px';
     data.results.forEach(p=>{
       const el = document.createElement('div');
       el.className = 'browse-platform-card';
