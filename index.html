@@ -2543,6 +2543,32 @@ window.openBrowseGames = function(){
     .forEach(v=>v.style.display='none');
   const view = document.getElementById('browseGamesView');
   if(view) view.style.display='block';
+  loadBrowsePlatforms();
+}
+ 
+window.loadBrowsePlatforms = async function(){
+  const container = document.getElementById('browseGamesView');
+  if(!container) return;
+  container.innerHTML = 'Carregando plataformas...';
+  try{
+    const res = await fetch(
+      'https://api.rawg.io/api/platforms?key=' + RAWG_API_KEY
+    );
+    const data = await res.json();
+    if(!data.results) return;
+    container.innerHTML = '';
+    data.results.forEach(p=>{
+      const el = document.createElement('div');
+      el.className = 'browse-platform-card';
+      el.innerText = p.name;
+      el.onclick = ()=>{
+        openPlatformCatalog(p.id, p.name);
+      };
+      container.appendChild(el);
+    });
+  }catch(e){
+    container.innerHTML = 'Erro ao carregar plataformas';
+  }
 }
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('menuBrowseGames');
