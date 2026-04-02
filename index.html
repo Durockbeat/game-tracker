@@ -670,7 +670,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="sb-sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0">
     <span class="sb-lbl">Plataformas</span>
     <div class="sb-plats" id="sb-plats"></div>
-    <div id="platformSidebar"></div>
+    <div id="platformSidebar" style="display:none;"></div>
   </div>
   <div class="sb-xp" id="sb-xp-wrap">
     <div class="sb-xp-name" id="sb-xp-name">Iniciante</div>
@@ -2539,7 +2539,7 @@ let _handled = false; // module-scoped so authLogout() can reset it
 // BROWSE GAMES VIEW
 // ══════════════════════════════════════════
 window.openBrowseGames = function(){
-  document.querySelectorAll('.main-view')
+  document.querySelectorAll('.page')
     .forEach(v=>v.style.display='none');
   const view = document.getElementById('browseGamesView');
   if(view) view.style.display='block';
