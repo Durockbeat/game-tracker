@@ -1685,6 +1685,16 @@ function quickStatus(id,status){
   const g=games.find(x=>x.id===id);if(!g)return;
   g.status=status;if(status==='Jogando'&&!g.dateStart)g.dateStart=new Date().toISOString().split('T')[0];
   persist();buildSb();updateQuickStats();updateXPUI();
+  // Sync status change directly to Supabase
+  (async()=>{
+    try{
+      await getSbClient()
+        .from('games')
+        .update({ status: status })
+        .eq('id', String(id))
+        .eq('user_id', currentUserId);
+    }catch(e){ console.log('[GT] quickStatus sync error:', e && e.message ? e.message : e); }
+  })();
   toast(`▶ ${g.name} marcado como ${status}!`);
   recommend();
 }
