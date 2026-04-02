@@ -666,6 +666,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   <div class="sb-sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0">
     <span class="sb-lbl">Plataformas</span>
     <div class="sb-plats" id="sb-plats"></div>
+    <div id="platformSidebar"></div>
   </div>
   <div class="sb-xp" id="sb-xp-wrap">
     <div class="sb-xp-name" id="sb-xp-name">Iniciante</div>
@@ -1283,6 +1284,7 @@ async function loadFromSupabase(){
     games = remote;
     _saveLocal(games);
     buildPlatformIndex();
+    renderPlatformSidebar();
     buildSb(); updateQuickStats(); updateXPUI(); renderDash();
     _setSyncStatus('synced');
   }catch(e){ console.log('[GT] Supabase load exception:',e && e.message ? e.message : e); _setSyncStatus('error'); }
@@ -1299,6 +1301,22 @@ window.buildPlatformIndex = function(){
       .forEach(p => set.add(p));
   });
   window.platformIndex = Array.from(set).sort();
+}
+ 
+window.renderPlatformSidebar = function(){
+  const container = document.getElementById('platformSidebar');
+  if(!container) return;
+  container.innerHTML = '';
+  if(!window.platformIndex) return;
+  window.platformIndex.forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'platform-item';
+    el.textContent = p;
+    el.onclick = ()=>{
+      filterByPlatform(p);
+    };
+    container.appendChild(el);
+  });
 }
  
 // ── Normalize individual game entries ──
