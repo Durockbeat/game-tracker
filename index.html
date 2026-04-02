@@ -2567,6 +2567,7 @@ let _handled = false; // module-scoped so authLogout() can reset it
 // BROWSE GAMES VIEW
 // ══════════════════════════════════════════
 window.openBrowseGames = function(){
+  console.log("DEBUG: openBrowseGames EXECUTOU");
   document.querySelectorAll('.page')
     .forEach(v=>v.style.display='none');
   const view = document.getElementById('browseGamesView');
