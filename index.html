@@ -484,6 +484,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .gc-name{font-size:10px}
 }
  
+/* ═══ BROWSE GAMES VIEW ═══ */
+#browseGamesView{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:12px;
+  padding:12px;
+}
+.browse-platform-card{
+  background:#111;
+  border:1px solid #222;
+  border-radius:10px;
+  padding:16px;
+  cursor:pointer;
+  transition:.15s ease;
+  text-align:center;
+  font-weight:600;
+}
+.browse-platform-card:hover{
+  background:#1a1a1a;
+  border-color:#333;
+}
+ 
 /* ═══ LOGIN SCREEN ═══ */
 #login-screen{
   position:fixed;inset:0;z-index:500;
@@ -2543,6 +2565,10 @@ window.openBrowseGames = function(){
     .forEach(v=>v.style.display='none');
   const view = document.getElementById('browseGamesView');
   if(view) view.style.display='block';
+  document.querySelectorAll('.sb-item')
+    .forEach(el=>el.classList.remove('active'));
+  const btn = document.getElementById('menuBrowseGames');
+  if(btn) btn.classList.add('active');
   loadBrowsePlatforms();
 }
  
@@ -2570,6 +2596,11 @@ window.loadBrowsePlatforms = async function(){
     container.innerHTML = 'Erro ao carregar plataformas';
   }
 }
+ 
+function openPlatformCatalog(platformId) {
+  console.log("Abrir catálogo da plataforma:", platformId);
+}
+ 
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('menuBrowseGames');
   if(btn) btn.onclick = window.openBrowseGames;
