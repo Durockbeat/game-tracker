@@ -2608,7 +2608,12 @@ window.loadBrowsePlatforms = async function(){
 }
  
 function openPlatformCatalog(platformId) {
-  console.log("Abrir catálogo da plataforma:", platformId);
+  selectedBrowsePlatformId = platformId;
+  const platforms = document.getElementById('browsePlatformsContainer');
+  if(platforms) platforms.style.display = 'none';
+  const catalog = document.getElementById('browseCatalogContainer');
+  if(catalog) catalog.style.display = 'block';
+  console.log("Modo catálogo ativo para plataforma:", platformId);
 }
  
 document.addEventListener('DOMContentLoaded', function(){
