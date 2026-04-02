@@ -505,6 +505,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   background:#1a1a1a;
   border-color:#333;
 }
+.browse-platforms-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:16px;
+  padding:8px 0;
+}
  
 /* ═══ LOGIN SCREEN ═══ */
 #login-screen{
@@ -2586,6 +2592,7 @@ window.loadBrowsePlatforms = async function(){
     data.results.forEach(p=>{
       const el = document.createElement('div');
       el.className = 'browse-platform-card';
+      el.classList.add('platform-card');
       el.innerText = p.name;
       el.onclick = ()=>{
         openPlatformCatalog(p.id, p.name);
