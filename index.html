@@ -2630,7 +2630,7 @@ async function loadPlatformCatalog(){
   const url = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${selectedBrowsePlatformId}&page=${browsePage}&page_size=20`;
   const res = await fetch(url);
   const data = await res.json();
-  console.log("Jogos carregados:", data.results?.length || 0);
+  console.log("RAWG resposta completa:", data);
 }
 
 window.openPlatformCatalog = function(platformId) {
