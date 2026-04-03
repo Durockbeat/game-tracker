@@ -2601,18 +2601,22 @@ window.loadBrowsePlatforms = async function(){
       </div>
     `;
     const select = document.getElementById('platformSelect');
+    if(!select){
+      console.log("platformSelect NÃO encontrado");
+      return;
+    }
     data.results.forEach(p => {
       const option = document.createElement('option');
       option.value = p.id;
       option.textContent = p.name;
       select.appendChild(option);
     });
-    select.addEventListener('change', async (event) => {
+    select.onchange = async function(event){
       const platformId = event.target.value;
       if(!platformId) return;
       selectedBrowsePlatformId = platformId;
       console.log("Plataforma selecionada:", platformId);
-    });
+    };
   }catch(e){
     container.innerHTML = 'Erro ao carregar plataformas';
   }
