@@ -2616,10 +2616,21 @@ window.loadBrowsePlatforms = async function(){
       if(!platformId) return;
       selectedBrowsePlatformId = platformId;
       console.log("Plataforma selecionada:", platformId);
+      browsePage = 1;
+      await loadPlatformCatalog();
     };
   }catch(e){
     container.innerHTML = 'Erro ao carregar plataformas';
   }
+}
+
+async function loadPlatformCatalog(){
+  if(!selectedBrowsePlatformId) return;
+  console.log("Carregando catálogo RAWG plataforma:", selectedBrowsePlatformId);
+  const url = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${selectedBrowsePlatformId}&page=${browsePage}&page_size=20`;
+  const res = await fetch(url);
+  const data = await res.json();
+  console.log("Jogos carregados:", data.results?.length || 0);
 }
 
 window.openPlatformCatalog = function(platformId) {
