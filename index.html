@@ -2632,6 +2632,7 @@ async function loadPlatformCatalog(){
   const data = await res.json();
   console.log("RAWG resposta completa:", data);
   const container = document.getElementById('browseCatalogContainer');
+  console.log("Container catálogo encontrado?", container);
   if(!container) return;
   container.innerHTML = '';
   container.style.display = 'grid';
