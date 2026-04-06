@@ -2631,6 +2631,24 @@ async function loadPlatformCatalog(){
   const res = await fetch(url);
   const data = await res.json();
   console.log("RAWG resposta completa:", data);
+  const container = document.getElementById('browseCatalogContainer');
+  if(!container) return;
+  container.innerHTML = '';
+  container.style.display = 'grid';
+  container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px, 1fr))';
+  container.style.gap = '16px';
+  container.style.marginTop = '20px';
+  data.results.forEach(game => {
+    const card = document.createElement('div');
+    card.className = 'browse-game-card';
+    const img = document.createElement('img');
+    img.src = game.background_image || '';
+    img.style.width = '100%';
+    img.style.borderRadius = '12px';
+    img.style.cursor = 'pointer';
+    card.appendChild(img);
+    container.appendChild(card);
+  });
 }
  
 window.openPlatformCatalog = function(platformId) {
