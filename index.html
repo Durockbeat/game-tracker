@@ -2577,6 +2577,11 @@ window.openBrowseGames = function(){
   const btn = document.getElementById('menuBrowseGames');
   if(btn) btn.classList.add('active');
   loadBrowsePlatforms();
+  const catalogContainer = document.createElement('div');
+  catalogContainer.id = 'browseCatalogContainer';
+  catalogContainer.style.width = '100%';
+  catalogContainer.style.marginTop = '24px';
+  document.getElementById('browseGamesView').appendChild(catalogContainer);
 }
  
 window.loadBrowsePlatforms = async function(){
