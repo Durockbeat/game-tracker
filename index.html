@@ -511,7 +511,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   gap:16px;
   padding:8px 0;
 }
-
+ 
 /* ═══ LOGIN SCREEN ═══ */
 #login-screen{
   position:fixed;inset:0;z-index:500;
@@ -590,7 +590,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .rawg-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rawg-year{font-size:10px;color:var(--text3);margin-top:2px}
 .rawg-loading{padding:10px 12px;font-size:11px;color:var(--text3);text-align:center}
-
+ 
 @media (min-width:1201px){
   #sidebar{
     position:sticky !important;
@@ -887,7 +887,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
  
   <!-- BROWSE GAMES VIEW -->
   <div id="browseGamesView" class="page" style="display:none;"></div>
-
+ 
 </div><!-- /main -->
  
 </div><!-- /app-shell -->
@@ -1324,7 +1324,7 @@ async function loadFromSupabase(){
     _setSyncStatus('synced');
   }catch(e){ console.log('[GT] Supabase load exception:',e && e.message ? e.message : e); _setSyncStatus('error'); }
 }
-
+ 
 window.buildPlatformIndex = function(){
   const set = new Set();
   games.forEach(g=>{
@@ -1337,7 +1337,7 @@ window.buildPlatformIndex = function(){
   });
   window.platformIndex = Array.from(set).sort();
 }
-
+ 
 window.renderPlatformSidebar = function(){
   const container = document.getElementById('platformSidebar');
   if(!container) return;
@@ -2578,7 +2578,7 @@ window.openBrowseGames = function(){
   if(btn) btn.classList.add('active');
   loadBrowsePlatforms();
 }
-
+ 
 window.loadBrowsePlatforms = async function(){
   console.log("DEBUG: loadBrowsePlatforms EXECUTOU");
   const container = document.getElementById('browseGamesView');
@@ -2623,7 +2623,7 @@ window.loadBrowsePlatforms = async function(){
     container.innerHTML = 'Erro ao carregar plataformas';
   }
 }
-
+ 
 async function loadPlatformCatalog(){
   if(!selectedBrowsePlatformId) return;
   console.log("Carregando catálogo RAWG plataforma:", selectedBrowsePlatformId);
@@ -2632,7 +2632,7 @@ async function loadPlatformCatalog(){
   const data = await res.json();
   console.log("RAWG resposta completa:", data);
 }
-
+ 
 window.openPlatformCatalog = function(platformId) {
   selectedBrowsePlatformId = platformId;
   const platforms = document.getElementById('browsePlatformsContainer');
@@ -2641,17 +2641,17 @@ window.openPlatformCatalog = function(platformId) {
   if(catalog) catalog.style.display = 'block';
   console.log("Modo catálogo ativo para plataforma:", platformId);
 }
-
+ 
 document.addEventListener('DOMContentLoaded', function(){
   const btn = document.getElementById('menuBrowseGames');
   if(btn) btn.onclick = window.openBrowseGames;
 });
-
+ 
 // ══════════════════════════════════════════
 // RAWG API — game search autocomplete
 // ══════════════════════════════════════════
 const RAWG_API_KEY = '7cddca1144c5431780cfcdccde4aebab';
-
+ 
 async function searchGamesRAWG(query) {
   if (!query || query.length < 3) return [];
   const response = await fetch(
@@ -2660,7 +2660,7 @@ async function searchGamesRAWG(query) {
   const data = await response.json();
   return data.results || [];
 }
-
+ 
 let _rawgTimer = null;
 function rawgSearch(val) {
   const dd = document.getElementById('rawg-dropdown');
@@ -2692,7 +2692,7 @@ function rawgSearch(val) {
     }
   }, 350);
 }
-
+ 
 function rawgSelect(r) {
   const dd = document.getElementById('rawg-dropdown');
   // Fill name
@@ -2718,7 +2718,7 @@ function rawgSelect(r) {
   // Close dropdown
   if (dd) { dd.classList.remove('open'); dd.innerHTML = ''; }
 }
-
+ 
 // Close dropdown when clicking outside
 document.addEventListener('click', e => {
   const dd  = document.getElementById('rawg-dropdown');
@@ -2727,8 +2727,8 @@ document.addEventListener('click', e => {
     dd.classList.remove('open'); dd.innerHTML = '';
   }
 });
-
-
+ 
+ 
 async function handleLoginGoogle() {
   if (typeof lsGoogle === "function") return lsGoogle();
   if (typeof authGoogle === "function") return authGoogle();
@@ -2740,3 +2740,5 @@ async function handleLoginSubmit() {
 </script>
 </body>
 </html>
+ 
+ 
