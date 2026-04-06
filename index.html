@@ -2655,10 +2655,19 @@ async function loadPlatformCatalog(){
   data.results.forEach(game => {
     const card = document.createElement('div');
     card.className = 'browse-game-card';
+    card.style.width = '160px';
+    card.style.height = '240px';
+    card.style.overflow = 'hidden';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.justifyContent = 'center';
+    card.style.backgroundColor = '#111';
+    card.style.borderRadius = '12px';
     const img = document.createElement('img');
     img.src = game.background_image || '';
     img.style.width = '100%';
-    img.style.borderRadius = '12px';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
     img.style.cursor = 'pointer';
     card.appendChild(img);
     container.appendChild(card);
