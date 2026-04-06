@@ -2610,6 +2610,14 @@ window.loadBrowsePlatforms = async function(){
       console.log("platformSelect NÃO encontrado");
       return;
     }
+    let catalogContainer = document.getElementById('browseCatalogContainer');
+    if(!catalogContainer){
+      catalogContainer = document.createElement('div');
+      catalogContainer.id = 'browseCatalogContainer';
+      catalogContainer.style.width = '100%';
+      catalogContainer.style.marginTop = '24px';
+      container.appendChild(catalogContainer);
+    }
     data.results.forEach(p => {
       const option = document.createElement('option');
       option.value = p.id;
