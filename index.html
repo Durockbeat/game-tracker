@@ -2685,14 +2685,18 @@ async function loadPlatformCatalog(){
     card.appendChild(title);
     container.appendChild(card);
   });
+  let existingNav = document.getElementById('catalogPaginationNav');
+  if(existingNav) existingNav.remove();
   const paginationContainer = document.createElement('div');
+  paginationContainer.id = 'catalogPaginationNav';
   paginationContainer.style.display = 'flex';
   paginationContainer.style.justifyContent = 'center';
-  paginationContainer.style.gap = '12px';
-  paginationContainer.style.marginTop = '20px';
+  paginationContainer.style.alignItems = 'center';
+  paginationContainer.style.gap = '24px';
+  paginationContainer.style.marginTop = '28px';
   if(data.previous){
     const prevBtn = document.createElement('button');
-    prevBtn.textContent = '← Anterior';
+    prevBtn.textContent = '← Voltar';
     prevBtn.onclick = () => loadPlatformCatalog(data.previous);
     paginationContainer.appendChild(prevBtn);
   }
@@ -2702,13 +2706,7 @@ async function loadPlatformCatalog(){
     nextBtn.onclick = () => loadPlatformCatalog(data.next);
     paginationContainer.appendChild(nextBtn);
   }
-  const navWrapper = document.createElement('div');
-  navWrapper.style.width = '100%';
-  navWrapper.style.display = 'flex';
-  navWrapper.style.justifyContent = 'center';
-  navWrapper.style.marginTop = '24px';
-  navWrapper.appendChild(paginationContainer);
-  catalogContainer.appendChild(navWrapper);
+  catalogContainer.appendChild(paginationContainer);
 }
 
 window.openPlatformCatalog = function(platformId) {
