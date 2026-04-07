@@ -2659,8 +2659,9 @@ async function loadPlatformCatalog(){
     card.style.height = '330px';
     card.style.overflow = 'hidden';
     card.style.display = 'flex';
+    card.style.flexDirection = 'column';
     card.style.alignItems = 'center';
-    card.style.justifyContent = 'center';
+    card.style.justifyContent = 'flex-start';
     card.style.backgroundColor = '#111';
     card.style.borderRadius = '12px';
     const img = document.createElement('img');
