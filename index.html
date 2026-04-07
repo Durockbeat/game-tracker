@@ -2640,7 +2640,7 @@ window.loadBrowsePlatforms = async function(){
 async function loadPlatformCatalog(){
   if(!selectedBrowsePlatformId) return;
   console.log("Carregando catálogo RAWG plataforma:", selectedBrowsePlatformId);
-  const url = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${selectedBrowsePlatformId}&page=${browsePage}&page_size=20`;
+  const url = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${selectedBrowsePlatformId}&page=${browsePage}&page_size=18`;
   const res = await fetch(url);
   const data = await res.json();
   console.log("RAWG resposta completa:", data);
