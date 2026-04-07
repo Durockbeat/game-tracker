@@ -2649,14 +2649,14 @@ async function loadPlatformCatalog(){
   if(!container) return;
   container.innerHTML = '';
   container.style.display = 'grid';
-  container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px, 1fr))';
+  container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))';
   container.style.gap = '16px';
   container.style.marginTop = '20px';
   data.results.forEach(game => {
     const card = document.createElement('div');
     card.className = 'browse-game-card';
-    card.style.width = '160px';
-    card.style.height = '240px';
+    card.style.width = '220px';
+    card.style.height = '330px';
     card.style.overflow = 'hidden';
     card.style.display = 'flex';
     card.style.alignItems = 'center';
@@ -2670,6 +2670,17 @@ async function loadPlatformCatalog(){
     img.style.objectFit = 'cover';
     img.style.cursor = 'pointer';
     card.appendChild(img);
+    const title = document.createElement('div');
+    title.textContent = game.name;
+    title.style.marginTop = '8px';
+    title.style.fontSize = '14px';
+    title.style.fontWeight = '600';
+    title.style.textAlign = 'center';
+    title.style.color = '#fff';
+    title.style.lineHeight = '1.2';
+    title.style.maxHeight = '34px';
+    title.style.overflow = 'hidden';
+    card.appendChild(title);
     container.appendChild(card);
   });
 }
