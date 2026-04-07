@@ -2701,7 +2701,13 @@ async function loadPlatformCatalog(){
     nextBtn.onclick = () => loadPlatformCatalog(data.next);
     paginationContainer.appendChild(nextBtn);
   }
-  container.appendChild(paginationContainer);
+  const navWrapper = document.createElement('div');
+  navWrapper.style.width = '100%';
+  navWrapper.style.display = 'flex';
+  navWrapper.style.justifyContent = 'center';
+  navWrapper.style.marginTop = '24px';
+  navWrapper.appendChild(paginationContainer);
+  catalogContainer.appendChild(navWrapper);
 }
 
 window.openPlatformCatalog = function(platformId) {
