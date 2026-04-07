@@ -2649,8 +2649,9 @@ async function loadPlatformCatalog(){
   if(!container) return;
   container.innerHTML = '';
   container.style.display = 'grid';
-  container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))';
-  container.style.gap = '16px';
+  container.style.gridTemplateColumns = 'repeat(6, 220px)';
+  container.style.justifyContent = 'center';
+  container.style.gap = '18px';
   container.style.marginTop = '20px';
   data.results.forEach(game => {
     const card = document.createElement('div');
