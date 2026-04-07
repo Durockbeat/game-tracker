@@ -2684,6 +2684,24 @@ async function loadPlatformCatalog(){
     card.appendChild(title);
     container.appendChild(card);
   });
+  const paginationContainer = document.createElement('div');
+  paginationContainer.style.display = 'flex';
+  paginationContainer.style.justifyContent = 'center';
+  paginationContainer.style.gap = '12px';
+  paginationContainer.style.marginTop = '20px';
+  if(data.previous){
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '← Anterior';
+    prevBtn.onclick = () => loadPlatformCatalog(data.previous);
+    paginationContainer.appendChild(prevBtn);
+  }
+  if(data.next){
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Próxima →';
+    nextBtn.onclick = () => loadPlatformCatalog(data.next);
+    paginationContainer.appendChild(nextBtn);
+  }
+  container.appendChild(paginationContainer);
 }
 
 window.openPlatformCatalog = function(platformId) {
