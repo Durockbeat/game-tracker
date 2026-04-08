@@ -2670,6 +2670,16 @@ async function loadPlatformCatalog(platformOrUrl){
     card.style.justifyContent = 'flex-start';
     card.style.backgroundColor = '#111';
     card.style.borderRadius = '12px';
+    card.style.cursor = 'pointer';
+    card.onclick = async () => {
+      const gameData = {
+        rawg_id: game.id,
+        name: game.name,
+        cover_url: game.background_image,
+        status: 'backlog'
+      };
+      await addGameToLibrary(gameData);
+    };
     const img = document.createElement('img');
     img.src = game.background_image || '';
     img.style.width = '100%';
