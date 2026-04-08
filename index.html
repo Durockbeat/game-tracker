@@ -2116,6 +2116,9 @@ async function saveGameFromCatalog(gameData){
     .select();
   console.log("SUPABASE INSERT DATA:", data);
   console.log("SUPABASE INSERT ERROR:", error);
+  if(!error){
+    await loadFromSupabase();
+  }
   return { data, error };
 }
 
