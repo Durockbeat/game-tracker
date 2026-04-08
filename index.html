@@ -2637,11 +2637,16 @@ window.loadBrowsePlatforms = async function(){
   }
 }
 
-async function loadPlatformCatalog(){
-  if(!selectedBrowsePlatformId) return;
-  console.log("Carregando catálogo RAWG plataforma:", selectedBrowsePlatformId);
-  const url = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${selectedBrowsePlatformId}&page=${browsePage}&page_size=18`;
-  const res = await fetch(url);
+async function loadPlatformCatalog(platformOrUrl){
+  if(!platformOrUrl && !selectedBrowsePlatformId) return;
+  console.log("Carregando catálogo RAWG plataforma:", platformOrUrl || selectedBrowsePlatformId);
+  let requestUrl;
+  if(typeof platformOrUrl === 'string' && platformOrUrl.startsWith('http')){
+    requestUrl = platformOrUrl;
+  } else {
+    requestUrl = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${platformOrUrl || selectedBrowsePlatformId}&page_size=18`;
+  }
+  const res = await fetch(requestUrl);
   const data = await res.json();
   console.log("RAWG resposta completa:", data);
   const container = document.getElementById('browseCatalogContainer');
@@ -2697,13 +2702,19 @@ async function loadPlatformCatalog(){
   if(data.previous){
     const prevBtn = document.createElement('button');
     prevBtn.textContent = '← Voltar';
-    prevBtn.onclick = () => loadPlatformCatalog(data.previous);
+    prevBtn.onclick = () => {
+      loadPlatformCatalog(data.previous);
+    };
     paginationContainer.appendChild(prevBtn);
   }
+  console.log("RAWG next:", data.next);
+  console.log("RAWG previous:", data.previous);
   if(data.next){
     const nextBtn = document.createElement('button');
     nextBtn.textContent = 'Próxima →';
-    nextBtn.onclick = () => loadPlatformCatalog(data.next);
+    nextBtn.onclick = () => {
+      loadPlatformCatalog(data.next);
+    };
     paginationContainer.appendChild(nextBtn);
   }
   container.appendChild(paginationContainer);
