@@ -1501,6 +1501,10 @@ function navigate(page,arg){
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  const browseView = document.getElementById('browseGamesView');
+  if(browseView){
+    browseView.style.display = 'none';
+  }
  
   if(page==='dashboard'){
     curPlat=null;
