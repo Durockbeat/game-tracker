@@ -2723,7 +2723,7 @@ async function loadPlatformCatalog(platformOrUrl){
         const result = await saveGame({
           id: crypto.randomUUID(),
           rawg_id: game.id,
-          name: game.name,
+          title: game.name,
           cover_url: game.background_image,
           status: statusSelect.value
         });
