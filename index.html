@@ -2719,8 +2719,6 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
       if(!currentUserId) return;
-      const sb = getSbClient();
-      if(!sb) return;
       const gameData = {
         id: crypto.randomUUID(),
         user_id: currentUserId,
@@ -2728,25 +2726,11 @@ async function loadPlatformCatalog(platformOrUrl){
         cover_url: game.background_image,
         status: statusSelect.value,
         rawg_id: String(game.id),
-        payload: JSON.stringify({ id: crypto.randomUUID(), user_id: currentUserId, name: game.name, cover: game.background_image, status: statusSelect.value, rawgId: String(game.id) }),
+        payload: JSON.stringify(game),
         updated_at: new Date().toISOString()
       };
-      try {
-        const { data, error } = await sb
-          .from('games')
-          .insert([gameData])
-          .select();
-        console.log("SUPABASE INSERT DATA:", data);
-        console.log("SUPABASE INSERT ERROR:", error);
-        if(!error){
-          addBtn.textContent = '✓';
-          addBtn.style.background = '#22c55e';
-        } else {
-          console.error("SAVE ERROR:", error);
-        }
-      } catch(err) {
-        console.error("SAVE ERROR:", err);
-      }
+      const result = await saveGameFromCatalog(gameData);
+      console.log("CATALOG SAVE RESULT:", result);
     };
     statusWrapper.appendChild(statusSelect);
     statusWrapper.appendChild(addBtn);
