@@ -2719,17 +2719,31 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
       if(!currentUserId) return;
+      const sb = getSbClient();
+      if(!sb) return;
+      const gameData = {
+        id: crypto.randomUUID(),
+        user_id: currentUserId,
+        title: game.name,
+        cover_url: game.background_image,
+        status: statusSelect.value,
+        rawg_id: String(game.id),
+        payload: JSON.stringify({ id: crypto.randomUUID(), user_id: currentUserId, name: game.name, cover: game.background_image, status: statusSelect.value, rawgId: String(game.id) }),
+        updated_at: new Date().toISOString()
+      };
       try {
-        const result = await saveGame({
-          id: crypto.randomUUID(),
-          rawg_id: game.id,
-          title: game.name,
-          cover_url: game.background_image,
-          status: statusSelect.value
-        });
-        console.log("SAVE RESULT:", result);
-        addBtn.textContent = '✓';
-        addBtn.style.background = '#22c55e';
+        const { data, error } = await sb
+          .from('games')
+          .insert([gameData])
+          .select();
+        console.log("SUPABASE INSERT DATA:", data);
+        console.log("SUPABASE INSERT ERROR:", error);
+        if(!error){
+          addBtn.textContent = '✓';
+          addBtn.style.background = '#22c55e';
+        } else {
+          console.error("SAVE ERROR:", error);
+        }
       } catch(err) {
         console.error("SAVE ERROR:", err);
       }
