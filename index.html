@@ -2718,13 +2718,12 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.color = '#000';
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
-      const gameData = {
+      await saveGame({
         rawg_id: game.id,
         name: game.name,
         cover_url: game.background_image,
         status: statusSelect.value
-      };
-      await addGameToLibrary(gameData);
+      });
     };
     statusWrapper.appendChild(statusSelect);
     statusWrapper.appendChild(addBtn);
