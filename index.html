@@ -2719,20 +2719,18 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
       if(!currentUserId) return;
-      const { error } = await getSbClient()
-        .from('games')
-        .insert([{
-          user_id: currentUserId,
+      try {
+        const result = await saveGame({
           rawg_id: game.id,
           name: game.name,
           cover_url: game.background_image,
           status: statusSelect.value
-        }]);
-      if(!error){
+        });
+        console.log("SAVE RESULT:", result);
         addBtn.textContent = '✓';
         addBtn.style.background = '#22c55e';
-      } else {
-        console.error(error);
+      } catch(err) {
+        console.error("SAVE ERROR:", err);
       }
     };
     statusWrapper.appendChild(statusSelect);
