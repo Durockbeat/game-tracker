@@ -2721,6 +2721,7 @@ async function loadPlatformCatalog(platformOrUrl){
       if(!currentUserId) return;
       try {
         const result = await saveGame({
+          id: crypto.randomUUID(),
           rawg_id: game.id,
           name: game.name,
           cover_url: game.background_image,
