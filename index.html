@@ -1505,6 +1505,8 @@ function navigate(page,arg){
   if(browseView){
     browseView.style.display = 'none';
   }
+  const allViews = document.querySelectorAll('.view');
+  allViews.forEach(v => v.style.display = 'none');
  
   if(page==='dashboard'){
     curPlat=null;
