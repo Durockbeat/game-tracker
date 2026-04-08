@@ -1496,6 +1496,7 @@ function toggleMobSb(){
 // NAVIGATION
 // ══════════════════════════════════════════
 function navigate(page,arg){
+  console.log("NAVIGATE VIEW:", page);
   document.getElementById('sidebar').classList.remove('mob-open');
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1511,6 +1512,7 @@ function navigate(page,arg){
     if(arg){setLibFilter('status',arg,null);}
     document.getElementById('pg-library').classList.add('active');
     document.getElementById('nav-library').classList.add('active');
+    loadFromSupabase().then(()=>renderLibrary());
     renderLibrary();
   } else if(page==='backlog'){
     curPlat=null;
