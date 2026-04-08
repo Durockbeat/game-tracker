@@ -2106,6 +2106,19 @@ function saveGame(){
   }
   refresh();
 }
+
+async function saveGameFromCatalog(gameData){
+  if(!currentUserId) return;
+  const sb = getSbClient();
+  const { data, error } = await sb
+    .from('games')
+    .insert([gameData])
+    .select();
+  console.log("SUPABASE INSERT DATA:", data);
+  console.log("SUPABASE INSERT ERROR:", error);
+  return { data, error };
+}
+
 function refresh(){
   const active=document.querySelector('.page.active');
   if(!active)return;
