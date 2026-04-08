@@ -2718,12 +2718,22 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.color = '#000';
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
-      await saveGame({
-        rawg_id: game.id,
-        name: game.name,
-        cover_url: game.background_image,
-        status: statusSelect.value
-      });
+      if(!currentUserId) return;
+      const { error } = await getSbClient()
+        .from('games')
+        .insert([{
+          user_id: currentUserId,
+          rawg_id: game.id,
+          name: game.name,
+          cover_url: game.background_image,
+          status: statusSelect.value
+        }]);
+      if(!error){
+        addBtn.textContent = '✓';
+        addBtn.style.background = '#22c55e';
+      } else {
+        console.error(error);
+      }
     };
     statusWrapper.appendChild(statusSelect);
     statusWrapper.appendChild(addBtn);
