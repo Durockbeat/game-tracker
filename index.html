@@ -2759,7 +2759,7 @@ async function loadPlatformCatalog(platformOrUrl){
       const gameData = {
         id: crypto.randomUUID(),
         user_id: currentUserId,
-        title: game.name,
+        title: game.name || null,
         cover_url: game.background_image || null,
         status: null,
         rawg_id: String(game.id),
