@@ -1502,7 +1502,15 @@ function navigate(page,arg){
   document.querySelectorAll(".page").forEach(p => console.log(p.id));
   const pages = document.querySelectorAll('.page');
   pages.forEach(p => p.style.display = 'none');
-  const targetPage = document.getElementById(page + 'View');
+  const pageMap = {
+    dashboard: 'pg-dash',
+    library: 'pg-library',
+    backlog: 'pg-backlog',
+    recommender: 'pg-rec',
+    achievements: 'pg-ach',
+    platforms: 'pg-plat'
+  };
+  const targetPage = document.getElementById(pageMap[page]);
   if(targetPage){
     targetPage.style.display = 'block';
   }
