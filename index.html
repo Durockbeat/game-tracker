@@ -1497,6 +1497,12 @@ function toggleMobSb(){
 // ══════════════════════════════════════════
 function navigate(page,arg){
   console.log("NAVIGATE VIEW:", page);
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(p => p.style.display = 'none');
+  const targetPage = document.getElementById(page + 'View');
+  if(targetPage){
+    targetPage.style.display = 'block';
+  }
   document.getElementById('sidebar').classList.remove('mob-open');
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
