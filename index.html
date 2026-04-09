@@ -2757,6 +2757,7 @@ async function loadPlatformCatalog(platformOrUrl){
     addBtn.style.cursor = 'pointer';
     addBtn.onclick = async () => {
       if(!currentUserId) return;
+      console.log("RAWG COVER DEBUG:", game.background_image);
       const gameData = {
         id: crypto.randomUUID(),
         user_id: currentUserId,
