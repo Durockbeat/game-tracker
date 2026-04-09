@@ -1497,6 +1497,9 @@ function toggleMobSb(){
 // ══════════════════════════════════════════
 function navigate(page,arg){
   console.log("NAVIGATE VIEW:", page);
+  console.log("TARGET PAGE ELEMENT:", document.getElementById(page + "View"));
+  console.log("ALL PAGE IDS:");
+  document.querySelectorAll(".page").forEach(p => console.log(p.id));
   const pages = document.querySelectorAll('.page');
   pages.forEach(p => p.style.display = 'none');
   const targetPage = document.getElementById(page + 'View');
