@@ -1516,9 +1516,9 @@ function navigate(page,arg){
     browse: 'browseGamesView'
   };
   const targetId = pageMap[page];
-  const targetPage = document.getElementById(targetId);
+  const targetPage = document.querySelector(`#${pageMap[page]}`);
   if(!targetPage){
-    console.error("PAGE NOT FOUND:", page, targetId);
+    console.warn("PAGE AINDA NÃO EXISTE NO DOM:", pageMap[page]);
     return;
   }
   document.querySelectorAll('#main .page').forEach(p => {
