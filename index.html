@@ -1510,12 +1510,19 @@ function navigate(page,arg){
     backlog: 'pg-backlog',
     recommender: 'pg-rec',
     achievements: 'pg-ach',
-    platforms: 'pg-plat'
+    platforms: 'pg-plat',
+    browse: 'browseGamesView'
   };
-  const targetPage = document.getElementById(pageMap[page]);
-  if(targetPage){
-    targetPage.style.display = 'block';
+  const targetId = pageMap[page];
+  const targetPage = document.getElementById(targetId);
+  if(!targetPage){
+    console.error("PAGE NOT FOUND:", page, targetId);
+    return;
   }
+  document.querySelectorAll('.page').forEach(p => {
+    p.style.display = 'none';
+  });
+  targetPage.style.display = 'block';
   document.getElementById('sidebar').classList.remove('mob-open');
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
