@@ -1506,25 +1506,15 @@ function navigate(page,arg){
   document.querySelectorAll("#main .page").forEach(p => console.log(p.id));
   const pages = document.querySelectorAll('#main .page');
   pages.forEach(p => p.style.display = 'none');
-  const pageMap = {
-    dashboard: 'pg-dash',
-    library: 'pg-library',
-    backlog: 'pg-backlog',
-    recommender: 'pg-rec',
-    achievements: 'pg-ach',
-    platforms: 'pg-plat',
-    browse: 'browseGamesView'
-  };
-  const targetId = pageMap[page];
-  const targetPage = document.querySelector(`#${pageMap[page]}`);
+  const targetPage = document.getElementById("pg-" + page);
   if(!targetPage){
-    console.warn("PAGE AINDA NÃO EXISTE NO DOM:", pageMap[page]);
+    console.error("PAGE NÃO ENCONTRADA:", "pg-" + page);
     return;
   }
-  document.querySelectorAll('#main .page').forEach(p => {
-    p.style.display = 'none';
+  document.querySelectorAll("#main .page").forEach(p => {
+    p.style.display = "none";
   });
-  targetPage.style.display = 'block';
+  targetPage.style.display = "block";
   document.getElementById('sidebar').classList.remove('mob-open');
   document.getElementById('sboverlay').style.display='none';
   document.querySelectorAll('#main .page').forEach(p=>p.classList.remove('active'));
