@@ -1572,10 +1572,11 @@ function platIcos(g){
   return pids.slice(0,3).map(pid=>PM[pid]?.ico||'🎮').join('');
 }
 function gameCardHTML(g){
-  const hasCover=g.cover&&g.cover.trim();
+  const hasCover=(g.cover&&g.cover.trim())||(g.cover_url&&g.cover_url.trim());
+  const coverSrc=g.cover||g.cover_url||'';
   const statusMap={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos',Joguei:'gb-Joguei'};
   const coverHTML=hasCover
-    ?`<img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(g.name)}','${platIcos(g)}')">`
+    ?`<img class="gc-cover" src="${esc(coverSrc)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(g.name)}','${platIcos(g)}')">`
     :`<div class="gc-cover-placeholder"><div class="ph-ico">${platIcos(g)||'🎮'}</div><div class="ph-txt">${esc(g.name)}</div></div>`;
   return `<div class="gc" onclick="openDetail(${g.id})">
     ${coverHTML}
