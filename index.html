@@ -1506,9 +1506,10 @@ function navigate(page,arg){
   document.querySelectorAll("#main .page").forEach(p => console.log(p.id));
   const pages = document.querySelectorAll('#main .page');
   pages.forEach(p => p.style.display = 'none');
-  const targetPage = document.getElementById("pg-" + page);
+  const targetPage = [...document.querySelectorAll(".page")]
+    .find(el => el.id === "pg-" + page);
   if(!targetPage){
-    console.error("PAGE NÃO ENCONTRADA:", "pg-" + page);
+    console.error("PAGE NÃO ENCONTRADA GLOBAL:", "pg-" + page);
     return;
   }
   document.querySelectorAll("#main .page").forEach(p => {
