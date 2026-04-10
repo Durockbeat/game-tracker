@@ -2168,9 +2168,9 @@ function refresh(){
 function editGame(id){
   const g=games.find(x=>x.id===id);if(!g)return;
   editId=g.id;
-  document.getElementById('f-name').value=g.name;
-  document.getElementById('f-cover').value=g.cover||'';
-  document.getElementById('f-status').value=g.status;
+  document.getElementById('f-name').value=g.name||g.title||'';
+  document.getElementById('f-cover').value=g.cover||g.cover_url||'';
+  document.getElementById('f-status').value=g.status||'Backlog';
   document.getElementById('f-genre').value=g.genre||'';
   document.getElementById('f-year').value=g.year||'';
   document.getElementById('f-score').value=g.score||'';
