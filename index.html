@@ -2117,6 +2117,25 @@ function saveGame(){
   if(editId){
     const i=games.findIndex(x=>x.id===editId);if(i>-1)games[i]=g;
     toast('✏️ Jogo atualizado!');
+    // Dedicated UPDATE for existing game — ensures remote persistence
+    (async()=>{
+      const sb = getSbClient();
+      const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+      if(!sb || !isOnline || !currentUserId || currentUserId === 'local-user') return;
+      const row = _buildRow(g);
+      console.log("UPDATE GAME DATA:", row);
+      const { error } = await sb
+        .from(SB_TABLE)
+        .update(row)
+        .eq('id', String(g.id))
+        .eq('user_id', currentUserId);
+      if(error){
+        console.log("UPDATE GAME ERROR:", error.message);
+        _setSyncStatus('error');
+      } else {
+        _setSyncStatus('synced');
+      }
+    })();
   } else {
     // Duplicate-check: block insert if same rawgId already exists for this user
     const rawgIdVal = document.getElementById('f-rawg-id').value;
