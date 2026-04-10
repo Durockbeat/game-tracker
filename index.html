@@ -1299,15 +1299,22 @@ async function loadFromSupabase(){
     _setSyncStatus('syncing');
     const { data, error } = await sb
       .from(SB_TABLE)
-      .select('payload,updated_at')
+      .select('payload,updated_at,cover_url')
       .eq('user_id', currentUserId)   // server-side filter
       .order('updated_at',{ascending:false});
     if(error){ console.log('[GT] Supabase load error:',error.message); _setSyncStatus('error'); return; }
     if(!data||!data.length){ _setSyncStatus('synced'); return; }
- 
+
     // Client-side double-check: discard any row not belonging to currentUserId
     const remote = data
-      .map(row=>{ try{ return JSON.parse(row.payload); }catch(e){ return null; } })
+      .map(row=>{
+        try{
+          const g = JSON.parse(row.payload);
+          g.cover = row.cover || row.cover_url || g.cover || null;
+          if(row.cover_url) g.cover_url = row.cover_url;
+          return g;
+        }catch(e){ return null; }
+      })
       .filter(Boolean)
       .map(normalizeGame)
       .filter(Boolean)
