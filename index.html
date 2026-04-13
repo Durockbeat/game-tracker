@@ -1220,7 +1220,12 @@ function _saveLocal(gamesArray){
 }
  
 // ── Write rows to Supabase (async, fire-and-forget with fallback) ──
+window.__GT_EDIT_REMOTE_LOCK = false;
 async function _saveRemote(gamesArray){
+  if(window.__GT_EDIT_REMOTE_LOCK){
+    console.log("[GT] _saveRemote bloqueado durante edição");
+    return;
+  }
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
   if(!sb || !isOnline) return;
@@ -2116,12 +2121,15 @@ function saveGame(){
   const prevUnlocked=getUnlocked();
   if(editId){
     const i=games.findIndex(x=>x.id===editId);if(i>-1)games[i]=g;
+    // Save locally only (no bulk upsert — UPDATE handles remote)
+    _saveLocal(games);
     toast('✏️ Jogo atualizado!');
     // Dedicated UPDATE for existing game — ensures remote persistence
     (async()=>{
       const sb = getSbClient();
       const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
       if(!sb || !isOnline || !currentUserId || currentUserId === 'local-user') return;
+      window.__GT_EDIT_REMOTE_LOCK = true;
       const row = _buildRow(g);
       console.log("UPDATE GAME DATA:", row);
       const { error } = await sb
@@ -2135,7 +2143,16 @@ function saveGame(){
       } else {
         _setSyncStatus('synced');
       }
+      window.__GT_EDIT_REMOTE_LOCK = false;
     })();
+    closeModal();buildSb();updateQuickStats();updateXPUI();
+    const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
+    if(newUnlocked.length){
+      const a=ACHIEVEMENTS_DEF.find(x=>x.id===newUnlocked[0]);
+      if(a)setTimeout(()=>toast(`🏆 Conquista desbloqueada: ${a.name}!`),800);
+    }
+    refresh();
+    return; // stop here — no bulk upsert for edits
   } else {
     // Duplicate-check: block insert if same rawgId already exists for this user
     const rawgIdVal = document.getElementById('f-rawg-id').value;
@@ -2146,8 +2163,7 @@ function saveGame(){
     games.unshift(g);
     toast('🎮 Jogo adicionado!');
   }
-  // 1. Always save locally first (sync, instant)
-  // 2. persist() also triggers _saveRemote — single cloud path, no duplicates
+  // Insert path only: persist() triggers _saveRemote (bulk upsert for new games)
   persist();
   closeModal();buildSb();updateQuickStats();updateXPUI();
   // Check new achievements
