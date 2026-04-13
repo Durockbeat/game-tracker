@@ -1219,42 +1219,62 @@ function _saveLocal(gamesArray){
   _memStore[STORAGE_KEY] = json;
 }
  
-// ── Write rows to Supabase (async, fire-and-forget with fallback) ──
+// ── Write rows to Supabase — serialized, deduplicated ──
 window.__GT_EDIT_REMOTE_LOCK = false;
+window.__GT_SYNC_IN_FLIGHT   = false;
 async function _saveRemote(gamesArray){
   if(window.__GT_EDIT_REMOTE_LOCK){
     console.log("[GT] _saveRemote bloqueado durante edição");
-    return;
+    return { ok: false, error: 'edit-lock' };
+  }
+  if(window.__GT_SYNC_IN_FLIGHT){
+    console.log("[GT] sync já em andamento, ignorando chamada duplicada");
+    return { ok: false, error: 'in-flight' };
   }
   const sb = getSbClient();
   const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
-  if(!sb || !isOnline) return;
-  if(!currentUserId || currentUserId === 'local-user') return; // never write cloud for local users
+  if(!sb || !isOnline) return { ok: false, error: 'offline' };
+  if(!currentUserId || currentUserId === 'local-user') return { ok: false, error: 'no-user' };
+  window.__GT_SYNC_IN_FLIGHT = true;
   _setSyncStatus('syncing');
   try{
-    // _buildRow is defined above — ensures id is always string and updated_at is fresh
-    const rows = gamesArray.map(_buildRow);
-    // Array form + onConflict:'id' prevents duplicate key violations
+    // Deduplicate by id — keep last occurrence, preserve order
+    const uniqueGames = [];
+    const seen = new Set();
+    for(let i = gamesArray.length - 1; i >= 0; i--){
+      const g = gamesArray[i];
+      if(!g || !g.id) continue;
+      const key = String(g.id);
+      if(seen.has(key)) continue;
+      seen.add(key);
+      uniqueGames.unshift(g);
+    }
+    const rows = uniqueGames.map(_buildRow);
     const { error } = await sb
       .from(SB_TABLE)
       .upsert(rows, { onConflict: 'id' });
     if(error){
-      console.log('[GT] bulk upsert error:', error.message);
+      console.log('[GT] bulk upsert error:', error.message || error);
       _setSyncStatus('error');
+      return { ok: false, error };
     } else {
       console.log('[GT] cloud save success');
       _setSyncStatus('synced');
+      return { ok: true, error: null };
     }
   }catch(e){
-    console.log('[GT] bulk upsert exception:', e && e.message ? e.message : '');
+    console.log('[GT] bulk upsert exception:', e && e.message ? e.message : e);
     _setSyncStatus('error');
+    return { ok: false, error: e };
+  }finally{
+    window.__GT_SYNC_IN_FLIGHT = false;
   }
 }
- 
-// ── PUBLIC: saveData() — always local, async remote ──
-function saveData(gamesArray){
+
+// ── PUBLIC: saveData() — always local, awaits remote ──
+async function saveData(gamesArray){
   _saveLocal(gamesArray);
-  _saveRemote(gamesArray); // async, does not block UI
+  return await _saveRemote(gamesArray);
 }
  
 // ── Load from localStorage (sync) ──
