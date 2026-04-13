@@ -2094,7 +2094,7 @@ async function _deleteGameFromCloud(id){
   }
 }
  
-function saveGame(){
+async function saveGame(){
   const name=document.getElementById('f-name').value.trim();
   if(!name){toast('⚠️ Nome é obrigatório.');return;}
   const platforms=getCheckedPlats();
@@ -2125,27 +2125,32 @@ function saveGame(){
     // Save locally only (no bulk upsert — UPDATE handles remote)
     _saveLocal(games);
     toast('✏️ Jogo atualizado!');
-    // Dedicated UPDATE for existing game — ensures remote persistence
-    (async()=>{
-      const sb = getSbClient();
-      const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
-      if(!sb || !isOnline || !currentUserId || currentUserId === 'local-user') return;
+    // Dedicated UPDATE — awaited directly for correct sync state
+    const sb = getSbClient();
+    const isOnline = (typeof navigator !== 'undefined') ? (navigator.onLine !== false) : false;
+    if(sb && isOnline && currentUserId && currentUserId !== 'local-user'){
       window.__GT_EDIT_REMOTE_LOCK = true;
-      const row = _buildRow(g);
-      console.log("UPDATE GAME DATA:", row);
-      const { error } = await sb
-        .from(SB_TABLE)
-        .update(row)
-        .eq('id', String(g.id))
-        .eq('user_id', currentUserId);
-      if(error){
-        console.log("UPDATE GAME ERROR:", error.message);
+      _setSyncStatus('syncing');
+      try{
+        const row = _buildRow(g);
+        console.log("UPDATE GAME DATA:", row);
+        const { error } = await sb
+          .from(SB_TABLE)
+          .update(row)
+          .eq('id', String(g.id))
+          .eq('user_id', currentUserId);
+        if(error){
+          console.log("UPDATE GAME ERROR:", error);
+          _setSyncStatus('error');
+        } else {
+          _setSyncStatus('synced');
+        }
+      }catch(e){
+        console.log("UPDATE GAME ERROR:", e && e.message ? e.message : e);
         _setSyncStatus('error');
-      } else {
-        _setSyncStatus('synced');
       }
       window.__GT_EDIT_REMOTE_LOCK = false;
-    })();
+    }
     closeModal();buildSb();updateQuickStats();updateXPUI();
     const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
     if(newUnlocked.length){
