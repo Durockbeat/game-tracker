@@ -1585,9 +1585,10 @@ function gameCardHTML(g){
   const hasCover=(g.cover&&g.cover.trim())||(g.cover_url&&g.cover_url.trim());
   const coverSrc=g.cover||g.cover_url||'';
   const statusMap={Finalizado:'gb-Finalizado',Jogando:'gb-Jogando',Backlog:'gb-Backlog',Desejos:'gb-Desejos',Joguei:'gb-Joguei'};
+  const gameName = g.name || g.title || '';
   const coverHTML=hasCover
-    ?`<img class="gc-cover" src="${esc(coverSrc)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(g.name)}','${platIcos(g)}')">`
-    :`<div class="gc-cover-placeholder"><div class="ph-ico">${platIcos(g)||'🎮'}</div><div class="ph-txt">${esc(g.name)}</div></div>`;
+    ?`<img class="gc-cover" src="${esc(coverSrc)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML=plateholderHTML('${esc(gameName)}','${platIcos(g)}')">`
+    :`<div class="gc-cover-placeholder"><div class="ph-ico">${platIcos(g)||'🎮'}</div><div class="ph-txt">${esc(gameName)}</div></div>`;
   return `<div class="gc" onclick="openDetail(${g.id})">
     ${coverHTML}
     <div class="gc-gradient"></div>
@@ -1600,11 +1601,11 @@ function gameCardHTML(g){
         <svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 3h8M4.5 3V2h3V3M3.5 3l.5 7h4l.5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
-    ${g.hours?`<div class="gc-hours">⏱${g.hours}h</div>`:''}
+    ${g.hours && g.hours!=='0'?`<div class="gc-hours">⏱${g.hours}h</div>`:''}
     <div class="gc-body">
-      <div class="gc-name">${esc(g.name)}</div>
+      <div class="gc-name">${esc(gameName)}</div>
       <div class="gc-meta">
-        <span class="gc-plat-ico">${platIcos(g)}</span>
+        ${platIcos(g)?`<span class="gc-plat-ico">${platIcos(g)}</span>`:''}
         ${g.status && g.status!=='null' && g.status!=='undefined'?`<span class="gc-badge ${statusMap[g.status]||'gb-Backlog'}">${g.status}</span>`:''}
       </div>
     </div>
