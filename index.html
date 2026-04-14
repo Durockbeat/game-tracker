@@ -1420,7 +1420,11 @@ let curPlatFilter = 'Todos';
 let curLibFilter  = {status:'Todos'};
 let sbCollapsed   = false;
  
-function persist(){ saveData(games); }
+async function persist(){
+  _saveLocal(games);
+  const result = await _saveRemote();
+  return result;
+}
  
 // ── Future auth: call after login ──
 // async function switchUser(uid){ currentUserId=uid; games=loadData().map(normalizeGame).filter(Boolean); await loadFromSupabase(); initApp(); }
@@ -1805,20 +1809,10 @@ function recommend(){
       </div>
     </div>`;
 }
-function quickStatus(id,status){
+async function quickStatus(id,status){
   const g=games.find(x=>x.id===id);if(!g)return;
   g.status=status;if(status==='Jogando'&&!g.dateStart)g.dateStart=new Date().toISOString().split('T')[0];
-  persist();buildSb();updateQuickStats();updateXPUI();
-  // Sync status change directly to Supabase
-  (async()=>{
-    try{
-      await getSbClient()
-        .from('games')
-        .update({ status: status })
-        .eq('id', String(id))
-        .eq('user_id', currentUserId);
-    }catch(e){ console.log('[GT] quickStatus sync error:', e && e.message ? e.message : e); }
-  })();
+  await persist();buildSb();updateQuickStats();updateXPUI();
   toast(`▶ ${g.name} marcado como ${status}!`);
   recommend();
 }
@@ -2188,7 +2182,7 @@ async function saveGame(){
     toast('🎮 Jogo adicionado!');
   }
   // Insert path only: persist() triggers _saveRemote (bulk upsert for new games)
-  persist();
+  await persist();
   closeModal();buildSb();updateQuickStats();updateXPUI();
   // Check new achievements
   const newUnlocked=getUnlocked().filter(id=>!prevUnlocked.includes(id));
@@ -2257,11 +2251,11 @@ function editGame(id){
   document.getElementById('moverlay').classList.add('open');
 }
  
-function deleteGame(id){
+async function deleteGame(id){
   if(!confirm('Remover este jogo?'))return;
   games=games.filter(g=>g.id!==id);
-  // 1. Always save locally first (sync, instant)
-  persist();buildSb();updateQuickStats();updateXPUI();
+  // 1. Save locally and await remote sync
+  await persist();buildSb();updateQuickStats();updateXPUI();
   // 2. Attempt cloud delete (async, silent fallback)
   _deleteGameFromCloud(id);
   toast('🗑️ Removido.');refresh();
