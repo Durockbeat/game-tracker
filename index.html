@@ -690,10 +690,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7 4.5V9.5M4.5 7h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <span class="sb-txt">Adicionar Jogo</span>
     </div>
-    <div class="sb-item" id="menuBrowseGames">
-      <div class="sb-ico"><svg width="13" height="13" fill="none" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M4 7h6M7 4v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-      <span class="sb-txt">Procurar Jogos</span>
-    </div>
+
   </div>
   <div class="sb-sec" style="flex:1;display:flex;flex-direction:column;min-height:0;padding-bottom:0">
     <span class="sb-lbl">Plataformas</span>
@@ -1544,15 +1541,10 @@ function navigate(page,arg){
     recommender: 'pg-rec',
     achievements: 'pg-ach',
     platforms: 'pg-plat',
-    browse: 'browseGamesView'
   };
   document.querySelectorAll('#main .page').forEach(el => {
     el.style.display = 'none';
   });
-  const browseView = document.getElementById('browseGamesView');
-  if(browseView){
-    browseView.style.display = 'none';
-  }
   const pageId = pageIdMap[page];
   const pageEl = document.getElementById(pageId);
   if(pageEl){
@@ -2679,217 +2671,8 @@ let _handled = false; // module-scoped so authLogout() can reset it
     toast('📴 Sem conexão — salvando localmente');
   });
 }());
-// ══════════════════════════════════════════
-// BROWSE GAMES VIEW
-// ══════════════════════════════════════════
-window.openBrowseGames = function(){
-  console.log("DEBUG: openBrowseGames EXECUTOU");
-  console.log("BROWSE ROOT:", document.getElementById('browseGamesView'));
-  console.log(
-    "BROWSE PARENT:",
-    document.getElementById('browseGamesView')
-      ? document.getElementById('browseGamesView').parentElement
-      : null
-  );
-  document.querySelectorAll('.page')
-    .forEach(v=>v.style.display='none');
-  const view = document.getElementById('browseGamesView');
-  if(view) view.style.display='block';
-  document.querySelectorAll('.sb-item')
-    .forEach(el=>el.classList.remove('active'));
-  const btn = document.getElementById('menuBrowseGames');
-  if(btn) btn.classList.add('active');
-  loadBrowsePlatforms();
-  const catalogContainer = document.createElement('div');
-  catalogContainer.id = 'browseCatalogContainer';
-  catalogContainer.style.width = '100%';
-  catalogContainer.style.marginTop = '24px';
-  document.getElementById('browseGamesView').appendChild(catalogContainer);
-}
-
-window.loadBrowsePlatforms = async function(){
-  console.log("DEBUG: loadBrowsePlatforms EXECUTOU");
-  const container = document.getElementById('browseGamesView');
-  if(!container) return;
-  container.innerHTML = 'Carregando plataformas...';
-  container.style.display = 'block';
-  container.style.gridTemplateColumns = '';
-  container.style.gap = '';
-  try{
-    const res = await fetch(
-      'https://api.rawg.io/api/platforms?key=' + RAWG_API_KEY
-    );
-    const data = await res.json();
-    if(!data.results) return;
-    container.innerHTML = `
-      <div style="display:flex; justify-content:center; margin:24px 0;">
-        <select id="platformSelect" style="padding:10px 16px; font-size:16px; border-radius:8px;">
-          <option value="">Selecionar plataforma...</option>
-        </select>
-      </div>
-    `;
-    const select = document.getElementById('platformSelect');
-    if(!select){
-      console.log("platformSelect NÃO encontrado");
-      return;
-    }
-    let catalogContainer = document.getElementById('browseCatalogContainer');
-    if(!catalogContainer){
-      catalogContainer = document.createElement('div');
-      catalogContainer.id = 'browseCatalogContainer';
-      catalogContainer.style.width = '100%';
-      catalogContainer.style.marginTop = '24px';
-      container.appendChild(catalogContainer);
-    }
-    data.results.forEach(p => {
-      const option = document.createElement('option');
-      option.value = p.id;
-      option.textContent = p.name;
-      select.appendChild(option);
-    });
-    select.onchange = async function(event){
-      const platformId = event.target.value;
-      if(!platformId) return;
-      selectedBrowsePlatformId = platformId;
-      console.log("Plataforma selecionada:", platformId);
-      browsePage = 1;
-      await loadPlatformCatalog();
-    };
-  }catch(e){
-    container.innerHTML = 'Erro ao carregar plataformas';
-  }
-}
-
-async function loadPlatformCatalog(platformOrUrl){
-  if(!platformOrUrl && !selectedBrowsePlatformId) return;
-  console.log("Carregando catálogo RAWG plataforma:", platformOrUrl || selectedBrowsePlatformId);
-  let requestUrl;
-  if(typeof platformOrUrl === 'string' && platformOrUrl.startsWith('http')){
-    requestUrl = platformOrUrl;
-  } else {
-    requestUrl = `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&platforms=${platformOrUrl || selectedBrowsePlatformId}&page_size=18`;
-  }
-  const res = await fetch(requestUrl);
-  const data = await res.json();
-  console.log("RAWG resposta completa:", data);
-  const container = document.getElementById('browseCatalogContainer');
-  console.log("Container catálogo encontrado?", container);
-  if(!container) return;
-  container.innerHTML = '';
-  container.style.display = 'grid';
-  container.style.gridTemplateColumns = 'repeat(6, 220px)';
-  container.style.justifyContent = 'center';
-  container.style.gap = '18px';
-  container.style.marginTop = '20px';
-  data.results.forEach(game => {
-    const card = document.createElement('div');
-    card.className = 'browse-game-card';
-    card.style.width = '220px';
-    card.style.height = '330px';
-    card.style.overflow = 'hidden';
-    card.style.display = 'flex';
-    card.style.flexDirection = 'column';
-    card.style.alignItems = 'center';
-    card.style.justifyContent = 'flex-start';
-    card.style.backgroundColor = '#111';
-    card.style.borderRadius = '12px';
-    card.style.cursor = 'pointer';
-    const img = document.createElement('img');
-    img.src = game.background_image || '';
-    img.style.width = '100%';
-    img.style.height = '260px';
-    img.style.objectFit = 'cover';
-    img.style.cursor = 'pointer';
-    card.appendChild(img);
-    const title = document.createElement('div');
-    title.textContent = game.name;
-    title.style.marginTop = '8px';
-    title.style.fontSize = '14px';
-    title.style.fontWeight = '600';
-    title.style.textAlign = 'center';
-    title.style.color = '#fff';
-    title.style.lineHeight = '1.2';
-    title.style.maxHeight = '34px';
-    title.style.overflow = 'hidden';
-    card.appendChild(title);
-    const statusWrapper = document.createElement('div');
-    statusWrapper.style.display = 'flex';
-    statusWrapper.style.alignItems = 'center';
-    statusWrapper.style.justifyContent = 'center';
-    statusWrapper.style.gap = '6px';
-    statusWrapper.style.marginTop = '6px';
-    const addBtn = document.createElement('button');
-    addBtn.textContent = '✔ Adicionar';
-    addBtn.style.fontSize = '12px';
-    addBtn.style.padding = '2px 6px';
-    addBtn.style.borderRadius = '6px';
-    addBtn.style.border = 'none';
-    addBtn.style.background = '#4ade80';
-    addBtn.style.color = '#000';
-    addBtn.style.cursor = 'pointer';
-    addBtn.onclick = async () => {
-      if(!currentUserId) return;
-      console.log("RAWG COVER DEBUG:", game.background_image);
-      const gameData = {
-        id: crypto.randomUUID(),
-        user_id: currentUserId,
-        title: game.name || null,
-        cover_url: game.background_image || null,
-        status: null,
-        rawg_id: String(game.id),
-        payload: JSON.stringify(game),
-        updated_at: new Date().toISOString()
-      };
-      const result = await saveGameFromCatalog(gameData);
-      console.log("CATALOG SAVE RESULT:", result);
-    };
-    statusWrapper.appendChild(addBtn);
-    card.appendChild(statusWrapper);
-    container.appendChild(card);
-  });
-  let existingNav = document.getElementById('catalogPaginationNav');
-  if(existingNav) existingNav.remove();
-  const paginationContainer = document.createElement('div');
-  paginationContainer.id = 'catalogPaginationNav';
-  paginationContainer.style.display = 'flex';
-  paginationContainer.style.justifyContent = 'center';
-  paginationContainer.style.alignItems = 'center';
-  paginationContainer.style.gap = '24px';
-  paginationContainer.style.marginTop = '28px';
-  if(data.previous){
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = '← Voltar';
-    prevBtn.onclick = () => {
-      loadPlatformCatalog(data.previous);
-    };
-    paginationContainer.appendChild(prevBtn);
-  }
-  console.log("RAWG next:", data.next);
-  console.log("RAWG previous:", data.previous);
-  if(data.next){
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Próxima →';
-    nextBtn.onclick = () => {
-      loadPlatformCatalog(data.next);
-    };
-    paginationContainer.appendChild(nextBtn);
-  }
-  container.appendChild(paginationContainer);
-}
-
-window.openPlatformCatalog = function(platformId) {
-  selectedBrowsePlatformId = platformId;
-  const platforms = document.getElementById('browsePlatformsContainer');
-  if(platforms) platforms.style.display = 'none';
-  const catalog = document.getElementById('browseCatalogContainer');
-  if(catalog) catalog.style.display = 'block';
-  console.log("Modo catálogo ativo para plataforma:", platformId);
-}
-
-document.addEventListener('DOMContentLoaded', function(){
-  const btn = document.getElementById('menuBrowseGames');
-  if(btn) btn.onclick = window.openBrowseGames;
-});
+// BROWSE GAMES VIEW — disabled
+window.openBrowseGames = function(){ return; }
 
 // ══════════════════════════════════════════
 // RAWG API — game search autocomplete
